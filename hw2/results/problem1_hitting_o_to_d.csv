@@ -1,0 +1,2 @@
+problem,quantity,start_node,target_node,seed,num_runs,simulation_mean,simulation_std,simulation_standard_error,simulation_ci95_low,simulation_ci95_high,theoretical_value,simulation_minus_theory,relative_error,theory_method
+1c_1d,hitting_time_o_to_d,o,d,20260616,100000,10.7608365852,8.94426026682,0.0282842344285,10.7053994857,10.8162736847,10.7666666667,-0.00583008148547,-0.000541493636421,linear_system_Q_h_equals_minus_one_with_h_d_zero

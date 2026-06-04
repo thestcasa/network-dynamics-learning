@@ -1,0 +1,2 @@
+problem,quantity,start_node,target_node,initial_holding_time_included,seed,num_runs,simulation_mean,simulation_std,simulation_standard_error,simulation_ci95_low,simulation_ci95_high,theoretical_value,simulation_minus_theory,relative_error,theory_method
+1a_1b,return_time_to_a_including_initial_holding_time,a,a,yes,20260615,100000,6.69375284456,4.9131262948,0.0155366695236,6.66330097229,6.72420471683,6.70833333333,-0.0145804887734,-0.00217348900969,stationary_cycle_formula_1_over_pi_i_omega_i

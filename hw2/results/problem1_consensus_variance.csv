@@ -1,0 +1,2 @@
+problem,seed,num_runs,initial_mean,variances_by_node,consensus_vector_pi,theoretical_variance,monte_carlo_variance,monte_carlo_mean,monte_carlo_minus_theory,relative_error,figure
+1f,20260617,50000,0.0,"{""o"": 1.0, ""a"": 2.0, ""b"": 2.0, ""c"": 2.0, ""d"": 1.0}","{""o"": 0.21739130434782614, ""a"": 0.14906832298136644, ""b"": 0.26086956521739135, ""c"": 0.18633540372670807, ""d"": 0.186335403726708}",0.331970217198,0.331277875538,-0.00270137580843,-0.000692341660048,-0.00208555353517,figures\problem1_consensus_value_histogram.png

@@ -1,0 +1,9 @@
+service_mode,lambda,horizon,num_replicates,mean_final_total,max_final_total,mean_second_half_total_slope,max_second_half_total_slope,drift_threshold,final_total_threshold,simulation_classification,theoretical_classification,theoretical_capacity_lambda,theoretical_bottleneck_node
+fixed,0.5,6000,3,2.66666666667,6,-5.39096084582e-05,-2.05646566748e-05,0.005,1000,stable_by_scan,stable_below_bottleneck,1.33333333333,c
+fixed,1,6000,3,7.33333333333,9,-0.000332810503079,2.64900662252e-05,0.005,1000,stable_by_scan,stable_below_bottleneck,1.33333333333,c
+fixed,1.2,6000,3,13,17,-0.00193249680493,6.88393168351e-05,0.005,1000,stable_by_scan,stable_below_bottleneck,1.33333333333,c
+fixed,1.3,6000,3,27,43,0.00343644707796,0.00468194492855,0.005,1000,stable_by_scan,stable_below_bottleneck,1.33333333333,c
+fixed,1.33333333333,6000,3,125.333333333,169,0.017733066109,0.0288041129313,0.005,1000,blow_up_by_scan,not_stable_at_or_above_bottleneck,1.33333333333,c
+fixed,1.35,6000,3,115.666666667,140,0.00748809108865,0.0238173579644,0.005,1000,blow_up_by_scan,not_stable_at_or_above_bottleneck,1.33333333333,c
+fixed,1.5,6000,3,677.333333333,699,0.107035029627,0.116164342977,0.005,1000,blow_up_by_scan,not_stable_at_or_above_bottleneck,1.33333333333,c
+fixed,2,6000,3,3144.66666667,3286,0.518004182642,0.544967061694,0.005,1000,blow_up_by_scan,not_stable_at_or_above_bottleneck,1.33333333333,c

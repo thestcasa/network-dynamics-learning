@@ -1,0 +1,6 @@
+service_mode,lambda,horizon,num_replicates,mean_final_total,max_final_total,mean_second_half_total_slope,max_second_half_total_slope,drift_threshold,final_total_threshold,simulation_classification,theoretical_classification,theoretical_capacity_lambda,theoretical_bottleneck_node
+proportional,10,120,2,30,36,0.0136088709677,0.0584677419355,0.5,,stable_by_scan,stable_for_any_finite_lambda,unbounded,
+proportional,50,120,2,165.5,167,-0.00756048387097,0.0260080645161,2.5,,stable_by_scan,stable_for_any_finite_lambda,unbounded,
+proportional,100,120,2,308,311,-0.0405241935484,-0.00181451612903,5,,stable_by_scan,stable_for_any_finite_lambda,unbounded,
+proportional,200,120,2,607,620,-0.407056451613,-0.0584677419355,10,,stable_by_scan,stable_for_any_finite_lambda,unbounded,
+proportional,500,120,2,1445.5,1458,-0.571370967742,-0.458870967742,25,,stable_by_scan,stable_for_any_finite_lambda,unbounded,
