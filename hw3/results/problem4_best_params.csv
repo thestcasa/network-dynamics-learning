@@ -1,0 +1,2 @@
+n,best_k,best_beta,best_rho,n_runs_search,search_rmse,n_runs_final,final_rmse,n_init_infected,seed
+934,8,0.2,0.625,100,5.56952720914,100,6.72540209455,1,20264808
