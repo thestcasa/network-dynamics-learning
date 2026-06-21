@@ -3,14 +3,12 @@
 State codes per node: 0 = S (susceptible), 1 = I (infected), 2 = R (recovered),
 3 = V (vaccinated). One time step is one week.
 
-Update convention (synchronous, from the start-of-week state X(t), as dictated by the
-assignment's transition equations which both condition on X(t) to yield X(t+1)):
-
-  * a susceptible node with 'm' infected neighbours becomes infected with
-    probability '1 - (1 - beta) ** m';
-  * an infected node recovers with probability 'rho';
-  * both transitions are computed from the same start-of-week infected set and applied
-    together, so a node infected this week cannot recover until the following week.
+Update convention is synchronous from the start-of-week state X(t), as dictated
+by the assignment's transition equations. A susceptible node with m infected
+neighbours becomes infected with probability 1 - (1 - beta) ** m. An infected
+node recovers with probability rho. Both transitions are computed from the same
+start-of-week infected set, so a node infected this week cannot recover until
+the following week.
 
 When a vaccination schedule is given, vaccination is applied at the *start* of each
 week (before infection spreads): the cumulative number of vaccinated individuals is
@@ -104,8 +102,16 @@ def _record_totals(totals, state, week):
         totals[label][week] = value
 
 
-def run_many(adjacency, beta, rho, n_init_infected, weeks, n_runs, base_seed,
-             vacc_schedule=None):
+def run_many(
+    adjacency,
+    beta,
+    rho,
+    n_init_infected,
+    weeks,
+    n_runs,
+    base_seed,
+    vacc_schedule=None,
+):
     """Average 'simulate_sir' over 'n_runs' independent runs.
 
     Each run uses 'np.random.default_rng(base_seed + run)' for reproducibility.
@@ -117,8 +123,15 @@ def run_many(adjacency, beta, rho, n_init_infected, weeks, n_runs, base_seed,
 
     for run in range(n_runs):
         rng = np.random.default_rng(base_seed + run)
-        result = simulate_sir(adjacency, beta, rho, n_init_infected, weeks, rng,
-                              vacc_schedule=vacc_schedule)
+        result = simulate_sir(
+            adjacency,
+            beta,
+            rho,
+            n_init_infected,
+            weeks,
+            rng,
+            vacc_schedule=vacc_schedule,
+        )
         for name in quantities:
             collected[name][run] = result[name]
 

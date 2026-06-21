@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import platform
 import sys
 from pathlib import Path
 
@@ -14,7 +13,14 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from constants import DEFAULT_SEED, FIGURES_DIR, LAMBDA, NODE_TO_INDEX, NODES, RESULTS_DIR
+from constants import (
+    DEFAULT_SEED,
+    FIGURES_DIR,
+    LAMBDA,
+    NODE_TO_INDEX,
+    NODES,
+    RESULTS_DIR,
+)
 from plotting import save_figure
 from problem1_opinion import (
     asymptotic_state,
@@ -125,7 +131,12 @@ def solve_fdg_original():
     summary = graph_summary(LAMBDA, NODES)
     final_values = trajectory[-1]
     output_fig = FIGURES_DIR / "problem1_fdg_original_trajectory.png"
-    plot_trajectory(times, trajectory, "Problem 1(e): original French-DeGroot trajectory", output_fig)
+    plot_trajectory(
+        times,
+        trajectory,
+        "Problem 1(e): original French-DeGroot trajectory",
+        output_fig,
+    )
     row = {
         "problem": "1e",
         "fdg_convention": "continuous_time_dxdt_equals_minus_Lx_L_diag_Lambda1_minus_Lambda",
@@ -133,10 +144,14 @@ def solve_fdg_original():
         "sccs": json.dumps(summary["sccs"]),
         "sink_components": json.dumps(summary["sink_components"]),
         "num_sink_components": summary["num_sink_components"],
-        "converges_to_consensus_for_every_initial_condition": "yes" if summary["single_sink_reachable_from_all"] else "no",
+        "converges_to_consensus_for_every_initial_condition": (
+            "yes" if summary["single_sink_reachable_from_all"] else "no"
+        ),
         "consensus_vector_pi": json.dumps(dict(zip(NODES, map(float, pi)))),
         "consensus_value_for_initial_condition": format_float(consensus_value),
-        "max_abs_final_minus_consensus": format_float(np.max(np.abs(final_values - consensus_value))),
+        "max_abs_final_minus_consensus": format_float(
+            np.max(np.abs(final_values - consensus_value))
+        ),
         "figure": str(output_fig.relative_to(ROOT)),
     }
     write_single_row_csv(RESULTS_DIR / "problem1_fdg_original_consensus.csv", row)
@@ -152,7 +167,14 @@ def solve_consensus_variance(pi):
     sample_variance = float(np.var(consensus_samples, ddof=1))
     theoretical_variance = float(np.sum(pi * pi * variances))
     fig, ax = plt.subplots(figsize=(7.2, 4.8))
-    ax.hist(consensus_samples, bins=60, density=True, color="#4c78a8", edgecolor="white", alpha=0.85)
+    ax.hist(
+        consensus_samples,
+        bins=60,
+        density=True,
+        color="#4c78a8",
+        edgecolor="white",
+        alpha=0.85,
+    )
     ax.axvline(0.0, color="black", linewidth=1.2, label="theoretical mean")
     ax.set_xlabel("consensus value")
     ax.set_ylabel("density")
@@ -172,7 +194,9 @@ def solve_consensus_variance(pi):
         "monte_carlo_variance": format_float(sample_variance),
         "monte_carlo_mean": format_float(np.mean(consensus_samples)),
         "monte_carlo_minus_theory": format_float(sample_variance - theoretical_variance),
-        "relative_error": format_float((sample_variance - theoretical_variance) / theoretical_variance),
+        "relative_error": format_float(
+            (sample_variance - theoretical_variance) / theoretical_variance
+        ),
         "figure": str(output_fig.relative_to(ROOT)),
     }
     write_single_row_csv(RESULTS_DIR / "problem1_consensus_variance.csv", row)
@@ -188,7 +212,12 @@ def solve_removed_g():
     trajectory = simulate_fdg(modified, x0, times)
     limit = asymptotic_state(modified, x0)
     output_fig = FIGURES_DIR / "problem1_fdg_removed_edges_g.png"
-    plot_trajectory(times, trajectory, "Problem 1(g): French-DeGroot after edge removals", output_fig)
+    plot_trajectory(
+        times,
+        trajectory,
+        "Problem 1(g): French-DeGroot after edge removals",
+        output_fig,
+    )
     row = {
         "problem": "1g",
         "removed_edges": json.dumps(edges),
@@ -196,9 +225,14 @@ def solve_removed_g():
         "sccs": json.dumps(summary["sccs"]),
         "sink_components": json.dumps(summary["sink_components"]),
         "num_sink_components": summary["num_sink_components"],
-        "converges_to_global_consensus_for_every_initial_condition": "yes" if summary["single_sink_reachable_from_all"] else "no",
+        "converges_to_global_consensus_for_every_initial_condition": (
+            "yes" if summary["single_sink_reachable_from_all"] else "no"
+        ),
         "asymptotic_state_for_initial_condition": json.dumps(dict(zip(NODES, map(float, limit)))),
-        "interpretation": "two_sink_components_so_limit_depends_on_sink_component_initial_values_and_transient_routing",
+        "interpretation": (
+            "two_sink_components_so_limit_depends_on_sink_component_initial_values_"
+            "and_transient_routing"
+        ),
         "figure": str(output_fig.relative_to(ROOT)),
     }
     write_single_row_csv(RESULTS_DIR / "problem1_removed_edges_g_summary.csv", row)
@@ -229,10 +263,17 @@ def solve_removed_h():
                 "sccs": json.dumps(summary["sccs"]),
                 "sink_components": json.dumps(summary["sink_components"]),
                 "num_sink_components": summary["num_sink_components"],
-                "converges_to_global_consensus_for_every_initial_condition": "yes" if summary["single_sink_reachable_from_all"] else "no",
-                "asymptotic_state_for_initial_condition": json.dumps(dict(zip(NODES, map(float, limit)))),
+                "converges_to_global_consensus_for_every_initial_condition": (
+                    "yes" if summary["single_sink_reachable_from_all"] else "no"
+                ),
+                "asymptotic_state_for_initial_condition": json.dumps(
+                    dict(zip(NODES, map(float, limit)))
+                ),
                 "max_minus_min_asymptotic_state": format_float(np.max(limit) - np.min(limit)),
-                "interpretation": "single_sink_component_reachable_from_all_so_global_consensus_depends_on_sink_component_initial_values",
+                "interpretation": (
+                    "single_sink_component_reachable_from_all_so_global_consensus_"
+                    "depends_on_sink_component_initial_values"
+                ),
                 "figure": str(output_fig.relative_to(ROOT)),
             }
         )
@@ -240,149 +281,15 @@ def solve_removed_h():
     return rows
 
 
-def update_results_log(outputs):
-    log_path = ROOT / "RESULTS_LOG.md"
-    content = f"""# RESULTS_LOG.md - Homework 2
-
-This file tracks all numerical results, generated figures, assumptions, and report-writing status for HW2.
-
-Do not insert invented values. Every numerical result must come from a script output or a checked theoretical computation.
-
----
-
-## Initialization - 2026-06-04
-
-- Folder structure created for `data/`, `src/`, `figures/`, `results/`, and `report/`.
-- Placeholder source files created in `src/`.
-- Minimal LaTeX report skeleton created at `report/report.tex`.
-- Placeholder `report/report.pdf` created because `pdflatex` is not available in this environment.
-- No simulations were run during initialization.
-
----
-
-## Problem 1 run - 2026-06-04
-
-### Global methods and assumptions
-
-- Work performed only inside `hw2/`.
-- Node order: `{NODES}`.
-- Matrix convention: `Lambda[i,j] = rate/weight from source node i to destination node j`.
-- CTMC generator: `Q = Lambda - diag(Lambda @ 1)`.
-- Return-time convention for P1(a)-P1(b): initial holding time in node `a` is included. The simulated time starts immediately at node `a`, samples the first holding time in `a`, and stops at the next entrance to `a` after leaving.
-- French-DeGroot convention for P1(e)-P1(h): continuous-time `dx/dt = -Lx`, with `L = diag(Lambda @ 1) - Lambda`, because lecture-specific notes were not available in this workspace.
-- Python version: `{platform.python_version()}`.
-- OS: `{platform.system()} {platform.release()}`.
-- Main libraries: numpy, matplotlib, Python standard library.
-
-### P1(a)-P1(b): return time to node a
-
-- Method: Monte Carlo CTMC simulation for P1(a); stationary CTMC cycle formula `E_a[T_a^+] = 1 / (pi_a omega_a)` for P1(b).
-- Seed: `{outputs['return']['seed']}`.
-- Number of Monte Carlo runs: `{outputs['return']['num_runs']}`.
-- Result file: `results/problem1_return_time_a.csv`.
-- Simulation mean: `{outputs['return']['simulation_mean']}`.
-- Simulation standard deviation: `{outputs['return']['simulation_std']}`.
-- Simulation standard error: `{outputs['return']['simulation_standard_error']}`.
-- 95 percent CI: [`{outputs['return']['simulation_ci95_low']}`, `{outputs['return']['simulation_ci95_high']}`].
-- Theoretical value: `{outputs['return']['theoretical_value']}`.
-- Simulation minus theory: `{outputs['return']['simulation_minus_theory']}`.
-- Relative error: `{outputs['return']['relative_error']}`.
-
-### P1(c)-P1(d): hitting time from node o to node d
-
-- Method: Monte Carlo CTMC simulation for P1(c); linear system `sum_j Q[i,j] h_j = -1` for `i != d`, with `h_d = 0`, for P1(d).
-- Seed: `{outputs['hitting']['seed']}`.
-- Number of Monte Carlo runs: `{outputs['hitting']['num_runs']}`.
-- Result file: `results/problem1_hitting_o_to_d.csv`.
-- Simulation mean: `{outputs['hitting']['simulation_mean']}`.
-- Simulation standard deviation: `{outputs['hitting']['simulation_std']}`.
-- Simulation standard error: `{outputs['hitting']['simulation_standard_error']}`.
-- 95 percent CI: [`{outputs['hitting']['simulation_ci95_low']}`, `{outputs['hitting']['simulation_ci95_high']}`].
-- Theoretical value: `{outputs['hitting']['theoretical_value']}`.
-- Simulation minus theory: `{outputs['hitting']['simulation_minus_theory']}`.
-- Relative error: `{outputs['hitting']['relative_error']}`.
-
-### P1(e): original French-DeGroot dynamics
-
-- Method: exact matrix exponential via eigendecomposition for `exp(-Lt)x(0)`; SCC/sink-component graph check.
-- Result file: `results/problem1_fdg_original_consensus.csv`.
-- Figure: `figures/problem1_fdg_original_trajectory.png`.
-- SCCs: `{outputs['fdg']['sccs']}`.
-- Sink components: `{outputs['fdg']['sink_components']}`.
-- Converges to consensus for every initial condition: `{outputs['fdg']['converges_to_consensus_for_every_initial_condition']}`.
-- Consensus vector pi: `{outputs['fdg']['consensus_vector_pi']}`.
-- Consensus value for saved initial condition: `{outputs['fdg']['consensus_value_for_initial_condition']}`.
-- Max absolute final-minus-consensus on plotted horizon: `{outputs['fdg']['max_abs_final_minus_consensus']}`.
-
-### P1(f): variance of consensus value
-
-- Method: theoretical variance `sum_i pi_i^2 Var(x_i(0))`; Monte Carlo sampling of independent zero-mean Gaussian initial states with requested variances.
-- Seed: `{outputs['variance']['seed']}`.
-- Number of Monte Carlo runs: `{outputs['variance']['num_runs']}`.
-- Result file: `results/problem1_consensus_variance.csv`.
-- Figure: `figures/problem1_consensus_value_histogram.png`.
-- Initial variances by node: `{outputs['variance']['variances_by_node']}`.
-- Theoretical variance: `{outputs['variance']['theoretical_variance']}`.
-- Monte Carlo variance: `{outputs['variance']['monte_carlo_variance']}`.
-- Monte Carlo mean: `{outputs['variance']['monte_carlo_mean']}`.
-- Monte Carlo minus theory: `{outputs['variance']['monte_carlo_minus_theory']}`.
-- Relative error: `{outputs['variance']['relative_error']}`.
-
-### P1(g): removed edges `(d,a), (d,c), (a,c), (b,c)`
-
-- Method: set requested directed entries of Lambda to zero; compute SCCs and sink SCCs; simulate a representative trajectory.
-- Result file: `results/problem1_removed_edges_g_summary.csv`.
-- Figure: `figures/problem1_fdg_removed_edges_g.png`.
-- SCCs: `{outputs['g']['sccs']}`.
-- Sink components: `{outputs['g']['sink_components']}`.
-- Converges to global consensus for every initial condition: `{outputs['g']['converges_to_global_consensus_for_every_initial_condition']}`.
-- Asymptotic state for saved initial condition: `{outputs['g']['asymptotic_state_for_initial_condition']}`.
-- Interpretation note: `{outputs['g']['interpretation']}`.
-
-### P1(h): removed edges `(b,o), (d,a)`
-
-- Method: set requested directed entries of Lambda to zero; compute SCCs and sink SCCs; simulate two representative trajectories.
-- Result file: `results/problem1_removed_edges_h_summary.csv`.
-- Figures: `figures/problem1_fdg_removed_edges_h_case1.png`, `figures/problem1_fdg_removed_edges_h_case2.png`.
-- Case 1 asymptotic state: `{outputs['h'][0]['asymptotic_state_for_initial_condition']}`.
-- Case 2 asymptotic state: `{outputs['h'][1]['asymptotic_state_for_initial_condition']}`.
-- SCCs: `{outputs['h'][0]['sccs']}`.
-- Sink components: `{outputs['h'][0]['sink_components']}`.
-- Converges to global consensus for every initial condition: `{outputs['h'][0]['converges_to_global_consensus_for_every_initial_condition']}`.
-- Interpretation note: `{outputs['h'][0]['interpretation']}`.
-
-### Report-writing notes and ambiguities
-
-- Confirm whether course lecture notes use the same continuous-time French-DeGroot convention.
-- State explicitly in the report that return times include the initial holding time in node `a`.
-- These factual notes were used as source material for the final report prose.
-
----
-
-# Problem 2 - Many particles
-
-Not solved in this step.
-
----
-
-# Problem 3 - Open network
-
-Not solved in this step.
-"""
-    log_path.write_text(content, encoding="utf-8")
-
-
 def main():
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
-    outputs = {}
-    outputs["return"] = solve_return_time()
-    outputs["hitting"], _ = solve_hitting_time()
-    outputs["fdg"], pi = solve_fdg_original()
-    outputs["variance"] = solve_consensus_variance(pi)
-    outputs["g"] = solve_removed_g()
-    outputs["h"] = solve_removed_h()
-    update_results_log(outputs)
+    solve_return_time()
+    solve_hitting_time()
+    _, pi = solve_fdg_original()
+    solve_consensus_variance(pi)
+    solve_removed_g()
+    solve_removed_h()
 
     print("Problem 1 completed.")
     print("Generated result files in results/ and figures in figures/.")

@@ -1,8 +1,8 @@
 """Exercise 3: traffic assignment.
 
-Run from the project root:
+Run from the hw1 directory:
 
-    python src/exercise3.py
+    python src/run_problem3.py
 """
 
 from __future__ import annotations
@@ -22,12 +22,16 @@ import scipy.io
 SOURCE = 1
 SINK = 17
 CAPACITY_FACTOR = 0.999
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DATA_DIR = PROJECT_ROOT / "data"
 RESULTS_DIR = Path("results")
 FIGURES_DIR = Path("figures")
 
 
 @dataclass(frozen=True)
 class TrafficData:
+    """Traffic network arrays loaded from the homework MAT files."""
+
     f_given: np.ndarray
     capacities: np.ndarray
     incidence: np.ndarray
@@ -40,10 +44,11 @@ def ensure_output_dirs() -> None:
 
 
 def load_data() -> TrafficData:
-    f_given = scipy.io.loadmat("data/flow.mat")["flow"].reshape(28,)
-    capacities = scipy.io.loadmat("data/capacities.mat")["capacities"].reshape(28,)
-    incidence = scipy.io.loadmat("data/traffic.mat")["traffic"]
-    free_flow_time = scipy.io.loadmat("data/traveltime.mat")["traveltime"].reshape(28,)
+    """Load flow, capacity, incidence, and free-flow travel-time arrays."""
+    f_given = scipy.io.loadmat(DATA_DIR / "flow.mat")["flow"].reshape(28,)
+    capacities = scipy.io.loadmat(DATA_DIR / "capacities.mat")["capacities"].reshape(28,)
+    incidence = scipy.io.loadmat(DATA_DIR / "traffic.mat")["traffic"]
+    free_flow_time = scipy.io.loadmat(DATA_DIR / "traveltime.mat")["traveltime"].reshape(28,)
     return TrafficData(
         f_given=f_given.astype(float),
         capacities=capacities.astype(float),
@@ -53,6 +58,7 @@ def load_data() -> TrafficData:
 
 
 def reconstruct_edges(B: np.ndarray) -> pd.DataFrame:
+    """Recover tail and head nodes from each column of the incidence matrix."""
     rows = []
     for edge_idx in range(B.shape[1]):
         tail_candidates = np.flatnonzero(np.isclose(B[:, edge_idx], 1.0))
@@ -70,6 +76,7 @@ def reconstruct_edges(B: np.ndarray) -> pd.DataFrame:
 
 
 def build_graph(edges: pd.DataFrame, l: np.ndarray, C: np.ndarray) -> nx.DiGraph:
+    """Build the directed traffic graph with travel times and capacities."""
     graph = nx.DiGraph()
     graph.add_nodes_from(range(1, int(edges[["tail", "head"]].to_numpy().max()) + 1))
     for row in edges.itertuples(index=False):
@@ -84,7 +91,10 @@ def build_graph(edges: pd.DataFrame, l: np.ndarray, C: np.ndarray) -> nx.DiGraph
     return graph
 
 
-def shortest_path_results(graph: nx.DiGraph) -> tuple[pd.DataFrame, list[int], list[int], float]:
+def shortest_path_results(
+    graph: nx.DiGraph,
+) -> tuple[pd.DataFrame, list[int], list[int], float]:
+    """Compute the shortest 1-to-17 path using free-flow travel times."""
     path_nodes = nx.shortest_path(graph, SOURCE, SINK, weight="weight")
     path_edges = []
     total_time = 0.0
@@ -110,6 +120,7 @@ def shortest_path_results(graph: nx.DiGraph) -> tuple[pd.DataFrame, list[int], l
 
 
 def maxflow_results(graph: nx.DiGraph, edges: pd.DataFrame) -> tuple[pd.DataFrame, float]:
+    """Compute the maximum feasible 1-to-17 flow under edge capacities."""
     value, flow_dict = nx.maximum_flow(graph, SOURCE, SINK, capacity="capacity")
     rows = []
     for row in edges.itertuples(index=False):
@@ -128,7 +139,10 @@ def maxflow_results(graph: nx.DiGraph, edges: pd.DataFrame) -> tuple[pd.DataFram
     return pd.DataFrame(rows), float(value)
 
 
-def exogenous_inflows(B: np.ndarray, f_given: np.ndarray) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
+def exogenous_inflows(
+    B: np.ndarray, f_given: np.ndarray
+) -> tuple[np.ndarray, np.ndarray, pd.DataFrame]:
+    """Build the original and reassigned net inflow vectors for the network."""
     nu = B @ f_given
     nu_new = np.zeros_like(nu)
     nu_new[0] = nu[0]
@@ -144,22 +158,29 @@ def exogenous_inflows(B: np.ndarray, f_given: np.ndarray) -> tuple[np.ndarray, n
 
 
 def delay(f: np.ndarray, l: np.ndarray, C: np.ndarray) -> np.ndarray:
+    """Evaluate edge delays l_e / (1 - f_e / C_e)."""
     return l / (1.0 - f / C)
 
 
 def tau_prime(f: np.ndarray, l: np.ndarray, C: np.ndarray) -> np.ndarray:
+    """Derivative of the delay function, used for marginal-cost tolls."""
     return (l / C) / np.square(1.0 - f / C)
 
 
 def total_travel_time_value(f: np.ndarray, l: np.ndarray, C: np.ndarray) -> float:
+    """Return sum_e f_e tau_e(f_e) for a concrete flow vector."""
     return float(np.sum(f * delay(f, l, C)))
 
 
-def total_travel_time_expression(f: cp.Variable, l: np.ndarray, C: np.ndarray) -> cp.Expression:
+def total_travel_time_expression(
+    f: cp.Variable, l: np.ndarray, C: np.ndarray
+) -> cp.Expression:
+    """CVXPY expression for total travel time."""
     return cp.sum(cp.multiply(l * C, cp.inv_pos(1.0 - cp.multiply(1.0 / C, f))) - l * C)
 
 
 def beckmann_expression(f: cp.Variable, l: np.ndarray, C: np.ndarray) -> cp.Expression:
+    """CVXPY Beckmann potential whose minimizer gives a Wardrop equilibrium."""
     return cp.sum(cp.multiply(-l * C, cp.log(1.0 - cp.multiply(1.0 / C, f))))
 
 
@@ -172,6 +193,7 @@ def solve_convex_flow(
     label: str,
     prefer_ecos: bool = False,
 ) -> tuple[str, float, np.ndarray]:
+    """Solve a convex traffic-assignment problem with B f = nu constraints."""
     problem = cp.Problem(
         cp.Minimize(objective),
         [
@@ -203,6 +225,7 @@ def solve_convex_flow(
 
 
 def solve_with_clarabel(problem: cp.Problem) -> float:
+    """Solve a CVXPY problem with CLARABEL, falling back to CVXPY defaults."""
     try:
         return float(
             problem.solve(
@@ -219,6 +242,7 @@ def solve_with_clarabel(problem: cp.Problem) -> float:
 
 
 def solve_with_ecos(problem: cp.Problem) -> float:
+    """Solve a CVXPY problem with ECOS while suppressing solver warnings."""
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", category=FutureWarning)
         return float(
@@ -233,7 +257,10 @@ def solve_with_ecos(problem: cp.Problem) -> float:
         )
 
 
-def solve_social_optimum(data: TrafficData, nu_new: np.ndarray) -> tuple[str, float, np.ndarray, pd.DataFrame]:
+def solve_social_optimum(
+    data: TrafficData, nu_new: np.ndarray
+) -> tuple[str, float, np.ndarray, pd.DataFrame]:
+    """Minimize total travel time over feasible edge flows."""
     f = cp.Variable(data.capacities.size)
     objective = total_travel_time_expression(f, data.free_flow_time, data.capacities)
     status, value, flow = solve_convex_flow(
@@ -257,6 +284,7 @@ def solve_wardrop(
     tolls: np.ndarray | None = None,
     label: str = "Wardrop",
 ) -> tuple[str, float, np.ndarray]:
+    """Solve the Wardrop equilibrium, optionally with edge tolls."""
     f = cp.Variable(data.capacities.size)
     objective = beckmann_expression(f, data.free_flow_time, data.capacities)
     if tolls is not None:
@@ -273,6 +301,7 @@ def solve_wardrop(
 
 
 def solve_additional_delay(data: TrafficData, nu_new: np.ndarray) -> tuple[str, float, np.ndarray]:
+    """Minimize the additional-delay objective from part 3(g)."""
     f = cp.Variable(data.capacities.size)
     total_expression = total_travel_time_expression(f, data.free_flow_time, data.capacities)
     objective = total_expression - data.free_flow_time @ f
@@ -293,6 +322,7 @@ def edge_flow_table(
     objective_value: float,
     edges: pd.DataFrame | None = None,
 ) -> pd.DataFrame:
+    """Combine edge metadata, flow values, and solver information in one table."""
     if edges is None:
         edges = reconstruct_edges(data.incidence)
     table = edges.copy()
@@ -311,6 +341,7 @@ def save_comparison_plot(
     tolled: np.ndarray,
     output_path: Path,
 ) -> None:
+    """Plot the three main flow vectors for visual comparison."""
     edge_numbers = np.arange(1, social.size + 1)
     plt.figure(figsize=(10, 5.5))
     plt.plot(edge_numbers, social, marker="o", label="social optimum")
@@ -324,121 +355,6 @@ def save_comparison_plot(
     plt.tight_layout()
     plt.savefig(output_path, dpi=200)
     plt.close()
-
-
-def markdown_table(dataframe: pd.DataFrame, columns: list[str] | None = None, digits: int = 6) -> str:
-    if columns is not None:
-        dataframe = dataframe[columns]
-
-    formatted = dataframe.copy()
-    for column in formatted.columns:
-        if pd.api.types.is_float_dtype(formatted[column]):
-            formatted[column] = formatted[column].map(lambda value: f"{value:.{digits}f}")
-
-    headers = [str(column) for column in formatted.columns]
-    rows = [[str(value) for value in row] for row in formatted.itertuples(index=False, name=None)]
-    widths = [max(len(headers[idx]), *(len(row[idx]) for row in rows)) for idx in range(len(headers))]
-    header_line = "| " + " | ".join(header.ljust(widths[idx]) for idx, header in enumerate(headers)) + " |"
-    separator = "| " + " | ".join("-" * width for width in widths) + " |"
-    body = [
-        "| " + " | ".join(row[idx].ljust(widths[idx]) for idx in range(len(headers))) + " |"
-        for row in rows
-    ]
-    return "\n".join([header_line, separator, *body])
-
-
-def append_results_log(
-    path_nodes: list[int],
-    path_edges: list[int],
-    path_time: float,
-    maxflow_value: float,
-    nu_table: pd.DataFrame,
-    social_table: pd.DataFrame,
-    wardrop_table: pd.DataFrame,
-    tolls_table: pd.DataFrame,
-    additional_table: pd.DataFrame,
-    poa: float,
-    tolled_norm: float,
-    tolled_add_norm: float,
-) -> None:
-    log_path = Path("RESULTS_LOG.md")
-    existing = log_path.read_text(encoding="utf-8") if log_path.exists() else "# Results Log\n"
-    exercise3_start = existing.find("\n## Exercise 3")
-    if exercise3_start != -1:
-        existing = existing[:exercise3_start].rstrip() + "\n"
-    else:
-        existing = existing.rstrip() + "\n"
-
-    social_summary = social_table[["edge", "tail", "head", "flow", "delay", "edge_total_travel_time"]]
-    wardrop_summary = wardrop_table[
-        ["edge", "tail", "head", "wardrop_flow", "wardrop_delay", "wardrop_total_travel_time"]
-    ]
-    tolls_summary = tolls_table[["edge", "omega", "f_tolled", "f_star", "flow_difference"]]
-    additional_summary = additional_table[
-        ["edge", "f_star_add", "omega_add", "f_tolled_add", "flow_difference"]
-    ]
-
-    lines = [
-        existing,
-        "## Exercise 3",
-        "",
-        "### 3(a): shortest path",
-        "",
-        f"Path nodes: {' -> '.join(str(node) for node in path_nodes)}",
-        f"Path edges: {' -> '.join(str(edge) for edge in path_edges)}",
-        f"Total free-flow travel time: {path_time:.6f}",
-        "",
-        "### 3(b): maximum flow",
-        "",
-        f"Maximum flow from node 1 to node 17: {maxflow_value:.6f}",
-        "",
-        "### 3(c): exogenous inflow",
-        "",
-        markdown_table(nu_table, ["node", "nu_original", "nu_new"], digits=3),
-        "",
-        "### 3(d): social optimum",
-        "",
-        f"Solver status: {social_table['solver_status'].iloc[0]}",
-        f"Objective value / total travel time: {social_table['objective_value'].iloc[0]:.6f}",
-        "",
-        markdown_table(social_summary, digits=6),
-        "",
-        "### 3(e): Wardrop equilibrium",
-        "",
-        f"Solver status: {wardrop_table['solver_status'].iloc[0]}",
-        f"Total travel time: {wardrop_table['wardrop_total_travel_time'].sum():.6f}",
-        f"Price of anarchy: {poa:.6f}",
-        "",
-        markdown_table(wardrop_summary, digits=6),
-        "",
-        "### 3(f): marginal-cost tolls",
-        "",
-        f"Solver status: {tolls_table['solver_status'].iloc[0]}",
-        f"||f_tolled - f_star||_2: {tolled_norm:.6e}",
-        "",
-        markdown_table(tolls_summary, digits=6),
-        "",
-        "### 3(g): additional-delay objective",
-        "",
-        f"Optimum solver status: {additional_table['optimum_status'].iloc[0]}",
-        f"Tolled Wardrop solver status: {additional_table['tolled_status'].iloc[0]}",
-        f"||f_tolled_add - f_star_add||_2: {tolled_add_norm:.6e}",
-        "",
-        markdown_table(additional_summary, digits=6),
-        "",
-        "Generated files:",
-        "",
-        "- `results/exercise3_shortest_path.csv`",
-        "- `results/exercise3_maxflow.csv`",
-        "- `results/exercise3_nu.csv`",
-        "- `results/exercise3_social_optimum.csv`",
-        "- `results/exercise3_wardrop.csv`",
-        "- `results/exercise3_tolls_total_travel_time.csv`",
-        "- `results/exercise3_additional_delay.csv`",
-        "- `figures/exercise3_flow_comparison.png`",
-        "",
-    ]
-    log_path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def print_section(title: str) -> None:
@@ -455,28 +371,36 @@ def main() -> None:
 
     print_section("3(a): shortest path")
     shortest_table, path_nodes, path_edges, path_time = shortest_path_results(graph)
-    shortest_table.to_csv(RESULTS_DIR / "exercise3_shortest_path.csv", index=False)
+    shortest_table.to_csv(RESULTS_DIR / "problem3_shortest_path.csv", index=False)
     print(f"path nodes: {path_nodes}")
     print(f"path edges: {path_edges}")
     print(f"total free-flow travel time: {path_time:.6f}")
 
     print_section("3(b): maximum flow")
     maxflow_table, maxflow_value = maxflow_results(graph, edges)
-    maxflow_table.to_csv(RESULTS_DIR / "exercise3_maxflow.csv", index=False)
+    maxflow_table.to_csv(RESULTS_DIR / "problem3_maxflow.csv", index=False)
     print(f"max-flow value: {maxflow_value:.6f}")
-    print(maxflow_table[maxflow_table["positive_flow"]].to_string(index=False, float_format="%.6f"))
+    print(
+        maxflow_table[maxflow_table["positive_flow"]].to_string(
+            index=False, float_format="%.6f"
+        )
+    )
 
     print_section("3(c): exogenous inflow")
     nu, nu_new, nu_table = exogenous_inflows(data.incidence, data.f_given)
-    nu_table.to_csv(RESULTS_DIR / "exercise3_nu.csv", index=False)
+    nu_table.to_csv(RESULTS_DIR / "problem3_nu.csv", index=False)
     print(f"nu = {nu}")
     print(f"nu_new = {nu_new}")
 
     print_section("3(d): social optimum")
     social_status, social_value, f_star, social_table = solve_social_optimum(data, nu_new)
-    social_table.to_csv(RESULTS_DIR / "exercise3_social_optimum.csv", index=False)
+    social_table.to_csv(RESULTS_DIR / "problem3_social_optimum.csv", index=False)
     print(f"objective value: {social_value:.6f}")
-    print(social_table[["edge", "tail", "head", "flow", "delay"]].to_string(index=False, float_format="%.6f"))
+    print(
+        social_table[["edge", "tail", "head", "flow", "delay"]].to_string(
+            index=False, float_format="%.6f"
+        )
+    )
 
     print_section("3(e): Wardrop equilibrium")
     wardrop_status, _, f_wardrop = solve_wardrop(data, nu_new, label="Wardrop")
@@ -494,7 +418,7 @@ def main() -> None:
     wardrop_table["total_travel_time_wardrop"] = wardrop_total
     wardrop_table["price_of_anarchy"] = poa
     wardrop_table["solver_status"] = wardrop_status
-    wardrop_table.to_csv(RESULTS_DIR / "exercise3_wardrop.csv", index=False)
+    wardrop_table.to_csv(RESULTS_DIR / "problem3_wardrop.csv", index=False)
     print(f"total travel time at Wardrop: {wardrop_total:.6f}")
     print(f"total travel time at social optimum: {social_total:.6f}")
     print(f"price of anarchy: {poa:.6f}")
@@ -510,12 +434,14 @@ def main() -> None:
     tolls_table["flow_difference"] = f_tolled - f_star
     tolls_table["norm_difference"] = tolled_norm
     tolls_table["solver_status"] = toll_status
-    tolls_table.to_csv(RESULTS_DIR / "exercise3_tolls_total_travel_time.csv", index=False)
+    tolls_table.to_csv(RESULTS_DIR / "problem3_tolls_total_travel_time.csv", index=False)
     print(f"||f_tolled - f_star||_2 = {tolled_norm:.6e}")
 
     print_section("3(g): additional-delay objective")
     add_status, add_value, f_star_add = solve_additional_delay(data, nu_new)
-    omega_add = -data.free_flow_time + f_star_add * tau_prime(f_star_add, data.free_flow_time, data.capacities)
+    omega_add = -data.free_flow_time + f_star_add * tau_prime(
+        f_star_add, data.free_flow_time, data.capacities
+    )
     tolled_add_status, _, f_tolled_add = solve_wardrop(
         data,
         nu_new,
@@ -532,7 +458,7 @@ def main() -> None:
     additional_table["norm_difference"] = tolled_add_norm
     additional_table["optimum_status"] = add_status
     additional_table["tolled_status"] = tolled_add_status
-    additional_table.to_csv(RESULTS_DIR / "exercise3_additional_delay.csv", index=False)
+    additional_table.to_csv(RESULTS_DIR / "problem3_additional_delay.csv", index=False)
     print(f"additional-delay optimum objective: {add_value:.6f}")
     print(f"||f_tolled_add - f_star_add||_2 = {tolled_add_norm:.6e}")
 
@@ -540,24 +466,10 @@ def main() -> None:
         f_star,
         f_wardrop,
         f_tolled,
-        FIGURES_DIR / "exercise3_flow_comparison.png",
-    )
-    append_results_log(
-        path_nodes,
-        path_edges,
-        path_time,
-        maxflow_value,
-        nu_table,
-        social_table,
-        wardrop_table,
-        tolls_table,
-        additional_table,
-        poa,
-        tolled_norm,
-        tolled_add_norm,
+        FIGURES_DIR / "problem3_flow_comparison.png",
     )
 
-    print("\nSaved Exercise 3 CSV files and figures/exercise3_flow_comparison.png")
+    print("\nSaved Exercise 3 CSV files and figures/problem3_flow_comparison.png")
 
 
 if __name__ == "__main__":

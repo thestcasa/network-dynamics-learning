@@ -97,7 +97,7 @@ def logit_transition(n, n1, epsilon):
 
     A player chosen uniformly at random sets x_i = +1 with probability
     'exp(u_i(+1)/eps) / (exp(u_i(+1)/eps) + exp(u_i(-1)/eps))'. The chain is ergodic
-    for any ``epsilon > 0``, so its limit distribution is the (unique) stationary one.
+    for any epsilon > 0, so its limit distribution is the unique stationary one.
     """
     profiles = all_profiles(n)
     index = profile_index_map(n)
@@ -140,11 +140,19 @@ def potential(profile, n1):
     """
     n = len(profile)
     if n1 == n:  # all coordinators
-        return sum(1 for i in range(n) for j in range(i + 1, n)
-                   if profile[i] == profile[j])
+        return sum(
+            1
+            for i in range(n)
+            for j in range(i + 1, n)
+            if profile[i] == profile[j]
+        )
     if n1 == 0:  # all anti-coordinators
-        return sum(1 for i in range(n) for j in range(i + 1, n)
-                   if profile[i] != profile[j])
+        return sum(
+            1
+            for i in range(n)
+            for j in range(i + 1, n)
+            if profile[i] != profile[j]
+        )
     raise ValueError("exact potential is only defined for n1 in {0, n}")
 
 

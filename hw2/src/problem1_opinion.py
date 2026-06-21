@@ -157,7 +157,12 @@ def graph_summary(lambda_matrix, node_names):
     sinks = sink_components(lambda_matrix)
     sink_reachable_from_all = []
     for sink in sinks:
-        sink_reachable_from_all.append(all(reaches_component(lambda_matrix, node, sink) for node in range(len(node_names))))
+        sink_reachable_from_all.append(
+            all(
+                reaches_component(lambda_matrix, node, sink)
+                for node in range(len(node_names))
+            )
+        )
     return {
         "sccs": [[node_names[i] for i in comp] for comp in sccs],
         "sink_components": [[node_names[i] for i in comp] for comp in sinks],

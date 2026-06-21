@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -11,7 +9,6 @@ from constants import DEFAULT_SEED, FIGURES_DIR, LAMBDA_OPEN, NODES, RESULTS_DIR
 from plotting import save_figure
 from problem3_open_network import (
     fixed_rate_capacity,
-    mean_absorption_times,
     open_network_components,
     simulate_open_network,
     simulate_replicates,
@@ -225,139 +222,9 @@ def plot_scan(path, scan_rows, title):
     save_figure(fig, path)
 
 
-def update_results_log(
-    omega,
-    absorption_times,
-    fixed_capacity,
-    fixed_bottleneck_index,
-    fixed_capacity_by_node,
-    proportional_scan_rows,
-    fixed_scan_rows,
-):
-    """Replace the Problem 3 section in RESULTS_LOG.md with factual notes."""
-    log_path = Path(__file__).resolve().parents[1] / "RESULTS_LOG.md"
-    text = log_path.read_text(encoding="utf-8")
-    marker = "# Problem 3 - Open network"
-    start = text.find(marker)
-    if start < 0:
-        marker = "## Problem 3 - Open network"
-        start = text.find(marker)
-    if start < 0:
-        raise ValueError("Could not find Problem 3 section in RESULTS_LOG.md")
-
-    proportional_lambdas = ", ".join(
-        f"`{row['lambda']}`" for row in proportional_scan_rows
-    )
-    fixed_lambdas = ", ".join(f"`{row['lambda']}`" for row in fixed_scan_rows)
-    omega_text = ", ".join(
-        f"{node}: {fmt(omega[index])}" for index, node in enumerate(NODES)
-    )
-    absorption_text = ", ".join(
-        f"{node}: {fmt(absorption_times[index])}" for index, node in enumerate(NODES)
-    )
-    fixed_capacity_text = ", ".join(
-        f"{node}: {fmt(fixed_capacity_by_node[index])}"
-        for index, node in enumerate(NODES)
-    )
-
-    proportional_scan_summary = "\n".join(
-        "- Lambda `{lambda}`: mean final total `{mean_final_total}`, "
-        "mean second-half drift `{mean_second_half_total_slope}`, "
-        "classification `{simulation_classification}`.".format(**row)
-        for row in proportional_scan_rows
-    )
-    fixed_scan_summary = "\n".join(
-        "- Lambda `{lambda}`: mean final total `{mean_final_total}`, "
-        "mean second-half drift `{mean_second_half_total_slope}`, "
-        "classification `{simulation_classification}`, "
-        "theoretical classification `{theoretical_classification}`.".format(**row)
-        for row in fixed_scan_rows
-    )
-
-    new_section = f"""# Problem 3 - Open network
-
-Solved on 2026-06-04.
-
-### Methods and assumptions
-
-- Work performed only inside `hw2/`.
-- Node order: `['o', 'a', 'b', 'c', 'd']`.
-- Matrix convention: `Lambda_open[i,j]` is the rate from source node `i` to destination node `j`.
-- External arrivals enter node `o` according to a Poisson process with rate `lambda`.
-- Service clock rates use `omega = Lambda_open @ 1`, with the assignment override `omega_d = 7/4`.
-- Omega values used: `{omega_text}`.
-- Event simulator supports service modes `proportional` and `fixed`.
-- In proportional mode, node `i` has service rate `omega_i N_i(t)`.
-- In fixed mode, node `i` has clock rate `omega_i`; empty-node clock ticks do nothing.
-- For nodes `o,a,b,c`, a nonempty service event forwards one particle using normalized outgoing rates from `Lambda_open`.
-- For node `d`, a nonempty service event removes one particle from the system.
-
-### P3(a): proportional-rate scenario
-
-- Main simulation seed: `{PROPORTIONAL_SEED}`.
-- Main simulation lambda: `{fmt(PROPORTIONAL_MAIN_LAMBDA)}`.
-- Main simulation horizon: `{fmt(PROPORTIONAL_MAIN_HORIZON)}`.
-- Result file: `results/problem3_proportional_timeseries_lambda100.csv`.
-- Figure: `figures/problem3_proportional_lambda100_counts.png`.
-- Stability scan seed base: `{PROPORTIONAL_SCAN_SEED}`.
-- Stability scan lambdas tested: {proportional_lambdas}.
-- Stability scan horizon: `{fmt(PROPORTIONAL_SCAN_HORIZON)}`.
-- Stability scan replicates per lambda: `{PROPORTIONAL_SCAN_REPLICATES}`.
-- Blow-up criterion for scan: classify as blow-up if the mean fitted slope of total population over the second half of the horizon exceeds `{fmt(PROPORTIONAL_DRIFT_FRACTION)}` times the tested lambda.
-- Result file: `results/problem3_proportional_stability_scan.csv`.
-- Figure: `figures/problem3_proportional_stability_scan.png`.
-- Theoretical motivation note: proportional service makes the open network a linear infinite-server network; the expected single-particle remaining lifetimes are `{absorption_text}`, so finite lambda gives finite expected population.
-- Proportional scan summary:
-{proportional_scan_summary}
-
-### P3(b): fixed-rate scenario
-
-- Main simulation seed: `{FIXED_SEED}`.
-- Main simulation lambda: `{fmt(FIXED_MAIN_LAMBDA)}`.
-- Main simulation horizon: `{fmt(FIXED_MAIN_HORIZON)}`.
-- Result file: `results/problem3_fixed_timeseries_lambda2.csv`.
-- Figure: `figures/problem3_fixed_lambda2_counts.png`.
-- Stability scan seed base: `{FIXED_SCAN_SEED}`.
-- Stability scan lambdas tested: {fixed_lambdas}.
-- Stability scan horizon: `{fmt(FIXED_SCAN_HORIZON)}`.
-- Stability scan replicates per lambda: `{FIXED_SCAN_REPLICATES}`.
-- Blow-up criterion for scan: classify as blow-up if the mean fitted slope of total population over the second half of the horizon exceeds `{fmt(FIXED_DRIFT_THRESHOLD)}` or if the mean final total exceeds `{fmt(FIXED_FINAL_TOTAL_THRESHOLD)}`.
-- Result file: `results/problem3_fixed_stability_scan.csv`.
-- Figure: `figures/problem3_fixed_stability_scan.png`.
-- Theoretical routing loads per unit lambda are saved in the run code as `[1, 1/2, 5/8, 3/4, 1]`.
-- Fixed-rate capacity by node: `{fixed_capacity_text}`.
-- Theoretical fixed-rate bottleneck node: `{NODES[fixed_bottleneck_index]}`.
-- Theoretical largest stable input rate: `{fmt(fixed_capacity)}`.
-- Fixed scan summary:
-{fixed_scan_summary}
-
-### Generated artifacts
-
-- `results/problem3_proportional_timeseries_lambda100.csv`
-- `results/problem3_proportional_stability_scan.csv`
-- `results/problem3_fixed_timeseries_lambda2.csv`
-- `results/problem3_fixed_stability_scan.csv`
-- `figures/problem3_proportional_lambda100_counts.png`
-- `figures/problem3_proportional_stability_scan.png`
-- `figures/problem3_fixed_lambda2_counts.png`
-- `figures/problem3_fixed_stability_scan.png`
-
-### Report-writing notes
-
-- These factual notes were used as source material for the final Problem 3 report prose.
-- State explicitly that the proportional-rate scenario has no finite theoretical upper bound for finite input rates.
-- State explicitly that the fixed-rate scenario has bottleneck capacity at node `{NODES[fixed_bottleneck_index]}`.
-
-"""
-    log_path.write_text(text[:start] + new_section, encoding="utf-8")
-
-
 def main():
     omega, _, p_jump_cdf = open_network_components(LAMBDA_OPEN)
-    fixed_capacity, fixed_bottleneck_index, fixed_capacity_by_node = (
-        fixed_rate_capacity(omega)
-    )
-    absorption_times = mean_absorption_times(LAMBDA_OPEN, omega)
+    fixed_capacity, fixed_bottleneck_index, _ = fixed_rate_capacity(omega)
 
     proportional_sample_times = sample_grid(PROPORTIONAL_MAIN_HORIZON, 0.05)
     proportional_rng = np.random.default_rng(PROPORTIONAL_SEED)
@@ -447,16 +314,6 @@ def main():
         FIGURES_DIR / "problem3_fixed_stability_scan.png",
         fixed_scan_rows,
         "Fixed-rate stability scan",
-    )
-
-    update_results_log(
-        omega,
-        absorption_times,
-        fixed_capacity,
-        fixed_bottleneck_index,
-        fixed_capacity_by_node,
-        proportional_scan_rows,
-        fixed_scan_rows,
     )
 
     print("Problem 3 complete.")

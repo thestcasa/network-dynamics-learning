@@ -42,7 +42,7 @@ def stationary_distribution(lambda_matrix):
 def simulate_return_times(lambda_matrix, start_index, runs, rng):
     """Simulate first positive return times including the initial holding time.
 
-    Starting in `start_index`, the clock in that state is sampled first. The
+    Starting in start_index, the clock in that state is sampled first. The
     returned time is the elapsed time until the chain next enters start_index.
     """
     omega = exit_rates(lambda_matrix)

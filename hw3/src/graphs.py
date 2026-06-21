@@ -1,13 +1,10 @@
 """Graph generators for Homework 3.
 
-Two undirected graph families, returned as symmetric 'scipy.sparse' adjacency
-matrices (CSR) with 0/1 entries and a zero diagonal:
-
-* 'k_regular(n, k)'        -- the deterministic symmetric k-regular ring of 1.1.1;
-* 'preferential_attachment(n, k, rng)' -- the random graph of 1.1.2.
-
-Both are parameterized only by '(n, k)' so that changing the average degree means
-changing a single argument (required for reuse in Problem 4).
+The module builds two undirected graph families as symmetric CSR adjacency
+matrices with 0/1 entries and zero diagonal. Problem 1.1 uses a deterministic
+k-regular ring. Problems 1.2, 2, 3, and 4 use the preferential-attachment
+generator, parameterized by n and k so the average degree can be changed in one
+place.
 """
 
 from __future__ import annotations
@@ -31,7 +28,7 @@ def k_regular(n, k):
         neighbours = (np.arange(n) + offset) % n
         rows.extend(range(n))
         cols.extend(neighbours.tolist())
-    # add both directions so the matrix is symmetric
+    # Add both directions so the adjacency matrix is symmetric.
     data = np.ones(2 * len(rows), dtype=np.int8)
     all_rows = np.array(rows + cols)
     all_cols = np.array(cols + rows)

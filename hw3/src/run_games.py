@@ -20,9 +20,17 @@ import networkx as nx  # noqa: E402
 import numpy as np  # noqa: E402
 
 from constants import FIGURES_DIR, RESULTS_DIR  # noqa: E402
-from games import (all_profiles, best_response_transition, limit_distribution_from_initial,  # noqa: E402
-                   logit_transition, nash_equilibria, profile_index_map,
-                   stationary_distribution, utility, vanishing_noise_limit)
+from games import (  # noqa: E402
+    all_profiles,
+    best_response_transition,
+    limit_distribution_from_initial,
+    logit_transition,
+    nash_equilibria,
+    profile_index_map,
+    stationary_distribution,
+    utility,
+    vanishing_noise_limit,
+)
 from plotting import save_figure  # noqa: E402
 from utils import format_float, write_rows_csv  # noqa: E402
 
@@ -66,8 +74,13 @@ def write_nash_tables():
             rows.append(row)
         write_rows_csv(RESULTS_DIR / f"games_nash_n1_{n1}.csv", rows)
         ne_labels = [label(p) for p in profiles if p in equilibria]
-        summary_rows.append({"n1": n1, "num_nash": len(ne_labels),
-                             "nash_equilibria": " ".join(ne_labels)})
+        summary_rows.append(
+            {
+                "n1": n1,
+                "num_nash": len(ne_labels),
+                "nash_equilibria": " ".join(ne_labels),
+            }
+        )
         print(f"[games] n1={n1}: {len(ne_labels)} pure NE -> {ne_labels}")
     write_rows_csv(RESULTS_DIR / "games_nash_summary.csv", summary_rows)
 
@@ -100,21 +113,49 @@ def draw_transition_graph(n1, path):
     node_colors = ["#d96459" if p in equilibria else "#9bc1d4" for p in profiles]
 
     fig, ax = plt.subplots(figsize=(9, 6))
-    nx.draw_networkx_nodes(graph, pos, node_color=node_colors, node_size=1500,
-                           edgecolors="black", ax=ax)
+    nx.draw_networkx_nodes(
+        graph,
+        pos,
+        node_color=node_colors,
+        node_size=1500,
+        edgecolors="black",
+        ax=ax,
+    )
     nx.draw_networkx_labels(graph, pos, font_size=12, font_family="monospace", ax=ax)
-    nx.draw_networkx_edges(graph, pos, ax=ax, node_size=1500, arrowsize=18,
-                           connectionstyle="arc3,rad=0.12", min_target_margin=18)
-    nx.draw_networkx_edge_labels(graph, pos, edge_labels=edge_labels, ax=ax,
-                                 font_size=9, label_pos=0.5,
-                                 connectionstyle="arc3,rad=0.12")
+    nx.draw_networkx_edges(
+        graph,
+        pos,
+        ax=ax,
+        node_size=1500,
+        arrowsize=18,
+        connectionstyle="arc3,rad=0.12",
+        min_target_margin=18,
+    )
+    nx.draw_networkx_edge_labels(
+        graph,
+        pos,
+        edge_labels=edge_labels,
+        ax=ax,
+        font_size=9,
+        label_pos=0.5,
+        connectionstyle="arc3,rad=0.12",
+    )
     # Annotate self-loop (staying) probabilities next to absorbing / indifferent states.
     for node, prob in self_loop_prob.items():
         x, y = pos[node]
-        ax.annotate(f"stay {_fraction(prob)}", (x, y), xytext=(0, 22),
-                    textcoords="offset points", ha="center", fontsize=8, color="#444444")
-    ax.set_title(f"Asynchronous best-response transition graph (n={N}, n1={n1})\n"
-                 f"red = Nash equilibrium (absorbing); edge labels are probabilities")
+        ax.annotate(
+            f"stay {_fraction(prob)}",
+            (x, y),
+            xytext=(0, 22),
+            textcoords="offset points",
+            ha="center",
+            fontsize=8,
+            color="#444444",
+        )
+    ax.set_title(
+        f"Asynchronous best-response transition graph (n={N}, n1={n1})\n"
+        "red = Nash equilibrium (absorbing); edge labels are probabilities"
+    )
     ax.axis("off")
     save_figure(fig, path)
 
@@ -139,8 +180,10 @@ def limit_distributions(n1):
     # distribution, independent of X(0). We report the exact vanishing-noise limit
     # (uniform over the potential maximizers) and track the numerical logit stationary
     # as eps -> 0 to confirm it.
-    epsilon_table = [(epsilon, stationary_distribution(logit_transition(N, n1, epsilon)))
-                     for epsilon in EPSILONS]
+    epsilon_table = [
+        (epsilon, stationary_distribution(logit_transition(N, n1, epsilon)))
+        for epsilon in EPSILONS
+    ]
     noisy_limit = vanishing_noise_limit(N, n1)
     return br_limit, noisy_limit, epsilon_table
 
@@ -155,23 +198,34 @@ def write_and_plot_limits():
         results[n1] = (br_limit, noisy_limit)
         for profile in profiles:
             i = profiles.index(profile)
-            rows.append({
-                "n1": n1, "state": label(profile),
-                "br_limit": format_float(br_limit[i]),
-                "noisy_vanishing_noise_limit": format_float(noisy_limit[i]),
-            })
+            rows.append(
+                {
+                    "n1": n1,
+                    "state": label(profile),
+                    "br_limit": format_float(br_limit[i]),
+                    "noisy_vanishing_noise_limit": format_float(noisy_limit[i]),
+                }
+            )
         # Console summary
-        br_support = {label(p): round(br_limit[profiles.index(p)], 3)
-                      for p in profiles if br_limit[profiles.index(p)] > 1e-6}
-        noisy_support = {label(p): round(noisy_limit[profiles.index(p)], 3)
-                         for p in profiles if noisy_limit[profiles.index(p)] > 1e-6}
+        br_support = {
+            label(p): round(br_limit[profiles.index(p)], 3)
+            for p in profiles
+            if br_limit[profiles.index(p)] > 1e-6
+        }
+        noisy_support = {
+            label(p): round(noisy_limit[profiles.index(p)], 3)
+            for p in profiles
+            if noisy_limit[profiles.index(p)] > 1e-6
+        }
         print(f"[games] n1={n1} | BR limit from {label(X0)}: {br_support}")
         print(f"[games] n1={n1} | noisy vanishing-noise limit: {noisy_support}")
         _plot_epsilon_convergence(n1, epsilon_table)
 
-    write_rows_csv(RESULTS_DIR / "games_limit_distributions.csv", rows,
-                   fieldnames=["n1", "state", "br_limit",
-                               "noisy_vanishing_noise_limit"])
+    write_rows_csv(
+        RESULTS_DIR / "games_limit_distributions.csv",
+        rows,
+        fieldnames=["n1", "state", "br_limit", "noisy_vanishing_noise_limit"],
+    )
     _plot_limit_bars(results)
 
 
@@ -185,8 +239,13 @@ def _plot_limit_bars(results):
     for ax, n1 in zip(axes, (3, 0)):
         br_limit, noisy_limit = results[n1]
         ax.bar(x - width / 2, br_limit, width, label="noiseless BR", color="#d96459")
-        ax.bar(x + width / 2, noisy_limit, width, label="noisy BR (eps->0)",
-               color="#5b8c9b")
+        ax.bar(
+            x + width / 2,
+            noisy_limit,
+            width,
+            label="noisy BR (eps->0)",
+            color="#5b8c9b",
+        )
         ax.set_xticks(x)
         ax.set_xticklabels(labels, fontfamily="monospace")
         ax.set_xlabel("state")

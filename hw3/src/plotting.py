@@ -26,12 +26,23 @@ def plot_lines(weeks, series, xlabel, ylabel, title, path, bands=None, markers=T
     """
     fig, ax = plt.subplots(figsize=(8, 4.8))
     for label, values in series.items():
-        line, = ax.plot(weeks, values, marker="o" if markers else None,
-                        markersize=4, linewidth=1.8, label=label)
+        (line,) = ax.plot(
+            weeks,
+            values,
+            marker="o" if markers else None,
+            markersize=4,
+            linewidth=1.8,
+            label=label,
+        )
         if bands is not None and label in bands:
             std = bands[label]
-            ax.fill_between(weeks, values - std, values + std, color=line.get_color(),
-                            alpha=0.15)
+            ax.fill_between(
+                weeks,
+                values - std,
+                values + std,
+                color=line.get_color(),
+                alpha=0.15,
+            )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
@@ -43,8 +54,12 @@ def plot_lines(weeks, series, xlabel, ylabel, title, path, bands=None, markers=T
 def plot_histogram(values, xlabel, ylabel, title, path, bins=None):
     """Plot a histogram of 'values' and save to 'path'."""
     fig, ax = plt.subplots(figsize=(8, 4.8))
-    ax.hist(values, bins=bins if bins is not None else "auto", color="#2f6f73",
-            edgecolor="white")
+    ax.hist(
+        values,
+        bins=bins if bins is not None else "auto",
+        color="#2f6f73",
+        edgecolor="white",
+    )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)

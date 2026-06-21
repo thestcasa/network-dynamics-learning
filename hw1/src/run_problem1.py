@@ -1,8 +1,8 @@
 """Exercise 1: max-flow, cuts, and capacity augmentation.
 
-Run from the project root:
+Run from the hw1 directory:
 
-    python src/exercise1.py
+    python src/run_problem1.py
 """
 
 from __future__ import annotations
@@ -25,6 +25,8 @@ SINK = "d"
 
 @dataclass(frozen=True)
 class Edge:
+    """Directed edge with the label and capacity used in Exercise 1."""
+
     label: str
     tail: str
     head: str
@@ -44,11 +46,13 @@ ALLOCATION_CACHE: dict[tuple[int, int], np.ndarray] = {}
 
 
 def ensure_output_dirs() -> None:
+    """Create output folders for CSV tables and figures."""
     Path("results").mkdir(exist_ok=True)
     Path("figures").mkdir(exist_ok=True)
 
 
 def powerset(items: list[str]) -> Iterable[tuple[str, ...]]:
+    """Yield all subsets of the non-terminal nodes when enumerating cuts."""
     for size in range(len(items) + 1):
         yield from combinations(items, size)
 
@@ -63,6 +67,7 @@ def enumerate_cuts(nodes: list[str], source: str, sink: str) -> list[frozenset[s
 
 
 def crossing_edge_indices(edges: list[Edge], cut: frozenset[str]) -> list[int]:
+    """Return indices of directed edges crossing from S to V minus S."""
     return [
         idx
         for idx, edge in enumerate(edges)
@@ -71,10 +76,12 @@ def crossing_edge_indices(edges: list[Edge], cut: frozenset[str]) -> list[int]:
 
 
 def cut_capacity(edges: list[Edge], cut: frozenset[str]) -> int:
+    """Compute the total capacity of a source-sink cut."""
     return sum(edges[idx].capacity for idx in crossing_edge_indices(edges, cut))
 
 
 def cut_table(edges: list[Edge], nodes: list[str]) -> pd.DataFrame:
+    """Build the table of all source-sink cuts and their capacities."""
     rows = []
     universe = set(nodes)
     for cut in enumerate_cuts(nodes, SOURCE, SINK):
@@ -91,6 +98,7 @@ def cut_table(edges: list[Edge], nodes: list[str]) -> pd.DataFrame:
 
 
 def build_networkx_graph(edges: list[Edge]) -> nx.DiGraph:
+    """Build the directed capacitated graph used by NetworkX max-flow."""
     graph = nx.DiGraph()
     graph.add_nodes_from(NODES)
     for edge in edges:
@@ -99,6 +107,7 @@ def build_networkx_graph(edges: list[Edge]) -> nx.DiGraph:
 
 
 def max_flow_value(edges: list[Edge]) -> int:
+    """Compute the maximum o-d flow value for the current edge set."""
     graph = build_networkx_graph(edges)
     value, _ = nx.maximum_flow(graph, SOURCE, SINK, capacity="capacity")
     return int(value)
@@ -155,6 +164,7 @@ def throughput_from_allocation(
 
 
 def format_allocation(edges: list[Edge], allocation: tuple[int, ...]) -> str:
+    """Format an integer capacity allocation for console and CSV output."""
     return "; ".join(
         f"{edge.label}({edge.tail}->{edge.head})={units}"
         for edge, units in zip(edges, allocation)
@@ -194,6 +204,7 @@ def optimize_extra_capacity(
 
 
 def candidate_added_links(nodes: list[str], edges: list[Edge]) -> list[tuple[str, str]]:
+    """Return missing directed links that can be tested in Exercise 1(c)."""
     existing = {(edge.tail, edge.head) for edge in edges}
     return [
         (tail, head)
@@ -250,6 +261,7 @@ def plot_throughput(
     title: str,
     comparison: pd.DataFrame | None = None,
 ) -> None:
+    """Plot best achievable throughput as the extra-capacity budget changes."""
     plt.figure(figsize=(8, 5))
     plt.plot(
         dataframe["x"],
@@ -281,120 +293,12 @@ def print_section(title: str) -> None:
     print("=" * len(title))
 
 
-def markdown_table(dataframe: pd.DataFrame, columns: list[str] | None = None) -> str:
-    """Render a simple GitHub-flavored Markdown table without optional packages."""
-    if columns is not None:
-        dataframe = dataframe[columns]
-
-    headers = [str(column) for column in dataframe.columns]
-    rows = [
-        [str(value) for value in row]
-        for row in dataframe.itertuples(index=False, name=None)
-    ]
-    widths = [
-        max(len(headers[idx]), *(len(row[idx]) for row in rows))
-        for idx in range(len(headers))
-    ]
-
-    header_line = "| " + " | ".join(
-        header.ljust(widths[idx]) for idx, header in enumerate(headers)
-    ) + " |"
-    separator = "| " + " | ".join("-" * width for width in widths) + " |"
-    body = [
-        "| " + " | ".join(
-            row[idx].ljust(widths[idx]) for idx in range(len(headers))
-        ) + " |"
-        for row in rows
-    ]
-    return "\n".join([header_line, separator, *body])
-
-
-def write_results_log(
-    cuts: pd.DataFrame,
-    min_cut_capacity: int,
-    max_flow: int,
-    b_results: pd.DataFrame,
-    c_results: pd.DataFrame,
-) -> None:
-    comparison = c_results[["x", "best_throughput"]].merge(
-        b_results[["x", "best_throughput"]],
-        on="x",
-        suffixes=("_with_added_link", "_existing_only"),
-    )
-    comparison["improvement"] = (
-        comparison["best_throughput_with_added_link"]
-        - comparison["best_throughput_existing_only"]
-    )
-
-    lines = [
-        "## Exercise 1",
-        "",
-        "### 1(a): cuts and max-flow",
-        "",
-        markdown_table(cuts),
-        "",
-        f"Minimum cut capacity: {min_cut_capacity}",
-        f"NetworkX maximum flow value: {max_flow}",
-        f"Max-flow/min-cut verification: {max_flow == min_cut_capacity}",
-        "",
-        "### 1(b): best extra-capacity allocation on existing links",
-        "",
-        markdown_table(b_results, ["x", "best_throughput", "allocation"]),
-        "",
-        "### 1(c): best added link and extra-capacity allocation",
-        "",
-        markdown_table(
-            c_results, ["x", "added_link", "best_throughput", "allocation"]
-        ),
-        "",
-        "### 1(c) versus 1(b)",
-        "",
-        markdown_table(comparison),
-        "",
-        "Generated files:",
-        "",
-        "- `results/exercise1_cuts.csv`",
-        "- `results/exercise1_b_results.csv`",
-        "- `results/exercise1_c_results.csv`",
-        "- `figures/exercise1_b_throughput.png`",
-        "- `figures/exercise1_c_added_link_throughput.png`",
-        "",
-    ]
-    update_results_log_section("Exercise 1", "\n".join(lines))
-
-
-def update_results_log_section(section_title: str, section_text: str) -> None:
-    log_path = Path("RESULTS_LOG.md")
-    existing = log_path.read_text(encoding="utf-8") if log_path.exists() else "# Results Log\n"
-    if not existing.startswith("# Results Log"):
-        existing = "# Results Log\n\n" + existing
-
-    marker = f"\n## {section_title}"
-    start = existing.find(marker)
-    if start == -1:
-        base = existing.rstrip()
-        updated = f"{base}\n\n{section_text.rstrip()}\n"
-    else:
-        next_start = existing.find("\n## ", start + len(marker))
-        if next_start == -1:
-            updated = existing[:start].rstrip() + "\n\n" + section_text.rstrip() + "\n"
-        else:
-            updated = (
-                existing[:start].rstrip()
-                + "\n\n"
-                + section_text.rstrip()
-                + "\n\n"
-                + existing[next_start:].lstrip()
-            )
-    log_path.write_text(updated, encoding="utf-8")
-
-
 def main() -> None:
     ensure_output_dirs()
 
     print_section("Exercise 1(a): cuts")
     cuts = cut_table(BASE_EDGES, NODES)
-    cuts.to_csv("results/exercise1_cuts.csv", index=False)
+    cuts.to_csv("results/problem1_cuts.csv", index=False)
     print(cuts.to_string(index=False))
 
     min_cut_capacity = int(cuts["capacity"].min())
@@ -405,17 +309,17 @@ def main() -> None:
 
     print_section("Exercise 1(b): existing-link capacity augmentation")
     b_results = optimize_extra_capacity(BASE_EDGES, NODES, max_extra=20)
-    b_results.to_csv("results/exercise1_b_results.csv", index=False)
+    b_results.to_csv("results/problem1_b_results.csv", index=False)
     print(b_results[["x", "best_throughput", "allocation"]].to_string(index=False))
     plot_throughput(
         b_results,
-        Path("figures/exercise1_b_throughput.png"),
+        Path("figures/problem1_b_throughput.png"),
         "Exercise 1(b): best throughput with existing links",
     )
 
     print_section("Exercise 1(c): one added link plus capacity augmentation")
     c_results = optimize_added_link_case(max_extra=20)
-    c_results.to_csv("results/exercise1_c_results.csv", index=False)
+    c_results.to_csv("results/problem1_c_results.csv", index=False)
     print(
         c_results[
             ["x", "added_link", "best_throughput", "allocation"]
@@ -423,7 +327,7 @@ def main() -> None:
     )
     plot_throughput(
         c_results,
-        Path("figures/exercise1_c_added_link_throughput.png"),
+        Path("figures/problem1_c_added_link_throughput.png"),
         "Exercise 1(c): best throughput with one added link",
         comparison=b_results,
     )
@@ -439,8 +343,6 @@ def main() -> None:
     )
     print("\nComparison with 1(b):")
     print(comparison.to_string(index=False))
-
-    write_results_log(cuts, min_cut_capacity, max_flow, b_results, c_results)
 
 
 if __name__ == "__main__":
