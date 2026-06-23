@@ -3,7 +3,9 @@
 Coordinate (local) search over a 3x3x3 neighbourhood in (k, beta, rho), minimizing the
 RMSE between the simulated average newly-infected curve and the real scaled data I0(t).
 Each evaluation builds a preferential-attachment graph (cached per k, since the graph
-depends only on k) and simulates the vaccinated epidemic of Section 1.3 N=10 times.
+depends only on k) and simulates the vaccinated epidemic of Section 1.3 N_RUNS_SEARCH
+times (=100; the assignment suggests N=10, but the single-seed RMSE objective is noisy,
+so we use 100 for a stable result; see constants.py).
 
 Run from the hw3/ directory:
 
