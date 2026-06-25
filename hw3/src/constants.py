@@ -44,6 +44,9 @@ DELTA_RHO = 0.1
 # onto spurious minima (true RMSE far from the apparent one). We use N=100 for a stable,
 # reproducible objective (std ~0.4), consistent with the assignment's invitation to tune.
 N_RUNS_SEARCH = 100
+# Assignment-specified value. We run the search at N=10 (artifacts suffixed
+# "_n10") for literal compliance with the PDF, side by side with the N=100 result above.
+N_RUNS_SEARCH_SPEC = 10
 
 # Reproducibility.
 DEFAULT_SEED = 20260608

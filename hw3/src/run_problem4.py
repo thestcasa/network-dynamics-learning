@@ -3,9 +3,13 @@
 Coordinate (local) search over a 3x3x3 neighbourhood in (k, beta, rho), minimizing the
 RMSE between the simulated average newly-infected curve and the real scaled data I0(t).
 Each evaluation builds a preferential-attachment graph (cached per k, since the graph
-depends only on k) and simulates the vaccinated epidemic of Section 1.3 N_RUNS_SEARCH
-times (=100; the assignment suggests N=10, but the single-seed RMSE objective is noisy,
-so we use 100 for a stable result; see constants.py).
+depends only on k) and simulates the vaccinated epidemic of Section 1.3.
+
+The search is run twice, side by side: once at N_RUNS_SEARCH (=100; the single-seed RMSE
+objective is noisy, so we test 100 for a more stable, result; see constants.py)
+and once at the assignment-specified N_RUNS_SEARCH_SPEC (=10), whose artifacts are
+suffixed "_n10". Both tracks share the same base seeds, so the N=10 runs are literally
+the first 10 of the N=100 runs.
 
 Run from the hw3/ directory:
 
@@ -26,6 +30,7 @@ from constants import (
     I0_SWEDEN,
     K0_SEARCH,
     N_RUNS_SEARCH,
+    N_RUNS_SEARCH_SPEC,
     N_SWEDEN,
     RESULTS_DIR,
     RHO0_SEARCH,
@@ -57,7 +62,7 @@ def rmse_to_real(newly_infected_mean):
     return float(np.sqrt(np.mean((simulated - target) ** 2)))
 
 
-def evaluate(k, beta, rho, graph_cache, rmse_cache, base_seed):
+def evaluate(k, beta, rho, graph_cache, rmse_cache, base_seed, n_runs):
     """Evaluate one (k, beta, rho); memoized. Returns (rmse, newly_infected_mean)."""
     key = (int(k), round(float(beta), 4), round(float(rho), 4))
     if key in rmse_cache:
@@ -69,7 +74,7 @@ def evaluate(k, beta, rho, graph_cache, rmse_cache, base_seed):
         rho,
         N_INIT_SWEDEN,
         WEEKS,
-        N_RUNS_SEARCH,
+        n_runs,
         base_seed=base_seed,
         vacc_schedule=VACC_SWEDEN,
     )
@@ -93,7 +98,7 @@ def neighbourhood(center, deltas):
                 yield (k, beta, rho)
 
 
-def coordinate_search():
+def coordinate_search(n_runs):
     """Run the coordinate search and return the best params plus the full log."""
     graph_cache = {}
     rmse_cache = {}
@@ -112,7 +117,7 @@ def coordinate_search():
             best_point = None
             best_rmse = np.inf
             for point in neighbourhood(center, deltas):
-                rmse, _ = evaluate(*point, graph_cache, rmse_cache, base_seed)
+                rmse, _ = evaluate(*point, graph_cache, rmse_cache, base_seed, n_runs)
                 log_rows.append(
                     {
                         "iteration": iteration,
@@ -139,22 +144,29 @@ def coordinate_search():
         refinements += 1
         print(f"[4] refining: halving beta/rho steps to {deltas[1]}, {deltas[2]}")
 
-    best_rmse, best_curve = evaluate(*center, graph_cache, rmse_cache, base_seed)
+    best_rmse, best_curve = evaluate(*center, graph_cache, rmse_cache, base_seed, n_runs)
     return center, best_rmse, best_curve, graph_cache, log_rows
 
 
-def main():
-    center, best_rmse, _, graph_cache, log_rows = coordinate_search()
+def run_track(n_runs_search, n_runs_final, suffix):
+    """Run one search-and-fit track and write its artifacts.
+
+    'n_runs_search' is the Monte Carlo sample size used during the coordinate search,
+    'n_runs_final' the size of the final presentation run, and 'suffix' is appended to
+    every output filename (empty for the N=100 headline track, "_n10" for the
+    assignment-specified track). Returns the best (k, beta, rho), the search RMSE, and
+    the final RMSE.
+    """
+    center, best_rmse, _, graph_cache, log_rows = coordinate_search(n_runs_search)
     best_k, best_beta, best_rho = center
     print(
-        f"[4] BEST: k={best_k}, beta={best_beta}, rho={best_rho}, "
-        f"search RMSE (N={N_RUNS_SEARCH})={best_rmse:.4f}"
+        f"[4] BEST (N={n_runs_search}): k={best_k}, beta={best_beta}, rho={best_rho}, "
+        f"search RMSE={best_rmse:.4f}"
     )
 
-    write_rows_csv(RESULTS_DIR / "problem4_search_log.csv", log_rows)
+    write_rows_csv(RESULTS_DIR / f"problem4_search_log{suffix}.csv", log_rows)
 
-    # Final presentation run with the best parameters (more runs for smoother curves).
-    final_runs = 100
+    # Final presentation run with the best parameters.
     adjacency = graph_cache[best_k]
     summary = run_many(
         adjacency,
@@ -162,7 +174,7 @@ def main():
         best_rho,
         N_INIT_SWEDEN,
         WEEKS,
-        final_runs,
+        n_runs_final,
         base_seed=DEFAULT_SEED + 4200,
         vacc_schedule=VACC_SWEDEN,
     )
@@ -170,22 +182,22 @@ def main():
     final_rmse = rmse_to_real(summary["newly_infected_mean"])
 
     write_single_row_csv(
-        RESULTS_DIR / "problem4_best_params.csv",
+        RESULTS_DIR / f"problem4_best_params{suffix}.csv",
         {
             "n": N_SWEDEN,
             "best_k": best_k,
             "best_beta": format_float(best_beta),
             "best_rho": format_float(best_rho),
-            "n_runs_search": N_RUNS_SEARCH,
+            "n_runs_search": n_runs_search,
             "search_rmse": format_float(best_rmse),
-            "n_runs_final": final_runs,
+            "n_runs_final": n_runs_final,
             "final_rmse": format_float(final_rmse),
             "n_init_infected": N_INIT_SWEDEN,
             "seed": DEFAULT_SEED + 4200,
         },
     )
     write_weekly_csv(
-        RESULTS_DIR / "problem4_fit_vs_real.csv",
+        RESULTS_DIR / f"problem4_fit_vs_real{suffix}.csv",
         weeks,
         {
             "model_newly_infected_mean": summary["newly_infected_mean"],
@@ -193,7 +205,7 @@ def main():
         },
     )
     write_weekly_csv(
-        RESULTS_DIR / "problem4_sirv_totals.csv",
+        RESULTS_DIR / f"problem4_sirv_totals{suffix}.csv",
         weeks,
         {
             "S_mean": summary["S_mean"],
@@ -212,8 +224,8 @@ def main():
         "week",
         "average number of newly infected",
         f"Problem 4: fitted vs real newly infected "
-        f"(k={best_k}, $\\beta$={best_beta}, $\\rho$={best_rho})",
-        FIGURES_DIR / "problem4_fit_vs_real.png",
+        f"(k={best_k}, $\\beta$={best_beta}, $\\rho$={best_rho}, N={n_runs_search})",
+        FIGURES_DIR / f"problem4_fit_vs_real{suffix}.png",
     )
     plot_lines(
         weeks,
@@ -225,10 +237,19 @@ def main():
         },
         "week",
         "average number of individuals",
-        f"Problem 4: S/I/R/V totals under the best model (N={final_runs})",
-        FIGURES_DIR / "problem4_sirv_totals.png",
+        f"Problem 4: S/I/R/V totals under the best model (N={n_runs_final})",
+        FIGURES_DIR / f"problem4_sirv_totals{suffix}.png",
     )
-    print(f"[4] final RMSE (N={final_runs}) at best params = {final_rmse:.4f}")
+    print(f"[4] final RMSE (N={n_runs_final}) at best params = {final_rmse:.4f}")
+    return center, best_rmse, final_rmse
+
+
+def main():
+    # Headline track: stable N=100 search (artifacts keep their original names).
+    run_track(N_RUNS_SEARCH, 100, "")
+    # Assignment-specified track: search and run at N=10, artifacts suffixed "_n10".
+    print(f"\n[4] re-running the search at the assignment-specified N={N_RUNS_SEARCH_SPEC}")
+    run_track(N_RUNS_SEARCH_SPEC, N_RUNS_SEARCH_SPEC, "_n10")
 
 
 if __name__ == "__main__":
