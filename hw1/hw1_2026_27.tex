@@ -4,6 +4,8 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{float}
@@ -129,7 +131,7 @@ T_b(x)&9&10&10&11&11&12&12&13&13&14
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.75\textwidth]{figures/problem1_b_throughput.png}
+\input{figures/problem1_b_throughput.tex}
 \caption{Optimal throughput on the six existing links for integer budgets \(x\ge0\).}
 \label{fig:exercise1-b-throughput}
 \end{figure}
@@ -182,7 +184,7 @@ this bound for every integer budget.
 
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.75\textwidth]{figures/problem1_c_added_link_throughput.png}
+\input{figures/problem1_c_added_link_throughput.tex}
 \caption{Optimal legal new-link design compared with existing-link augmentation,
 for integer \(x>0\).}
 \label{fig:exercise1-c-throughput}
