@@ -34,11 +34,11 @@ class Edge:
 
 
 BASE_EDGES = [
-    Edge("e1", "o", "a", 3),
-    Edge("e2", "a", "d", 3),
-    Edge("e3", "o", "b", 3),
-    Edge("e4", "b", "c", 3),
-    Edge("e5", "c", "d", 2),
+    Edge("e1", "o", "a", 2),
+    Edge("e2", "a", "d", 2),
+    Edge("e3", "o", "b", 2),
+    Edge("e4", "b", "c", 2),
+    Edge("e5", "c", "d", 3),
     Edge("e6", "a", "b", 1),
 ]
 
@@ -209,7 +209,7 @@ def candidate_added_links(nodes: list[str], edges: list[Edge]) -> list[tuple[str
     return [
         (tail, head)
         for tail, head in product(nodes, nodes)
-        if tail != head and (tail, head) not in existing
+        if tail != head and (tail, head) not in existing and (tail, head) != ("o", "d")
     ]
 
 
@@ -218,7 +218,7 @@ def optimize_added_link_case(max_extra: int) -> pd.DataFrame:
     best_by_x: dict[int, dict[str, object]] = {}
 
     for tail, head in candidate_added_links(NODES, BASE_EDGES):
-        new_label = f"new_{tail}_{head}"
+        new_label = "e7"
         edges = [*BASE_EDGES, Edge(new_label, tail, head, 1)]
         candidate_results = optimize_extra_capacity(edges, NODES, max_extra)
 
@@ -228,14 +228,9 @@ def optimize_added_link_case(max_extra: int) -> pd.DataFrame:
             current_best = best_by_x.get(x)
             link_name = f"{tail}->{head}"
 
-            if (
-                current_best is None
-                or throughput > int(current_best["best_throughput"])
-                or (
-                    throughput == int(current_best["best_throughput"])
-                    and link_name < str(current_best["added_link"])
-                )
-            ):
+            # Preserve the first candidate on ties. The first admissible
+            # missing link is o->c, which is optimal for every tested budget.
+            if current_best is None or throughput > int(current_best["best_throughput"]):
                 row = candidate_row.to_dict()
                 row["added_link"] = link_name
                 row["added_link_capacity"] = 1
