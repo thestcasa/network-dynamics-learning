@@ -1,0 +1,11 @@
+% 2026/27 Exercise 1(c). Vector plot for integer budgets x>0.
+\begin{tikzpicture}
+\begin{axis}[width=0.82\textwidth,height=6cm,grid=major,
+ xlabel={Extra capacity units $x$},ylabel={Maximum $o$-$d$ throughput},xmin=1,xmax=20,ymin=3,ymax=16,
+ xtick={1,3,...,19},legend pos=north west]
+\addplot+[const plot,mark=*,mark size=1.4pt] coordinates {(1,5) (2,6) (3,6) (4,7) (5,7) (6,8) (7,8) (8,9) (9,9) (10,10) (11,10) (12,11) (13,11) (14,12) (15,12) (16,13) (17,13) (18,14) (19,14) (20,15)};
+\addlegendentry{With new link}
+\addplot+[const plot,dashed,mark=square*,mark size=1.4pt] coordinates {(1,4) (2,5) (3,5) (4,6) (5,6) (6,7) (7,7) (8,8) (9,8) (10,9) (11,9) (12,10) (13,10) (14,11) (15,11) (16,12) (17,12) (18,13) (19,13) (20,14)};
+\addlegendentry{Existing links only}
+\end{axis}
+\end{tikzpicture}
