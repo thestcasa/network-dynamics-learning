@@ -9,9 +9,10 @@
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{float}
+\usepackage{xurl}
 \usepackage[hidelinks]{hyperref}
 
-\graphicspath{{../figures/}}
+\graphicspath{{figures/}}
 
 \title{Homework 1\\Network Dynamics and Learning}
 \author{
@@ -24,11 +25,11 @@ Alessandro Casadei (s349386)
 
 \section*{Collaboration Statement}
 
-This report adapts a 2025/26 project developed jointly by the named authors.
-Exercise 1 has been recomputed for the 2026/27 parameters, and the numerical
-verification and associated discussion have been updated accordingly. Before
-submission, each author should confirm that this statement accurately describes
-their contributions to the current submission.
+The original 2025/26 homework was developed jointly by Gabriele Adorni and
+Alessandro Casadei, including implementation, experiments, and analysis. This
+2026/27 version builds on that work: Exercise 1 has been recomputed for the
+revised capacities and added-link restriction, and the traffic inputs used for
+Exercise 3 have been verified against the updated course files.
 
 \section{Introduction}
 
@@ -42,8 +43,8 @@ equilibria, and tolls that decentralize selected optima.
 
 All numerical values reported below are obtained from the generated CSV files and
 the corresponding scripts. The scripts that produce these values are
-\texttt{hw1/src/run\_problem1.py}, \texttt{hw1/src/run\_problem2.py}, and
-\texttt{hw1/src/run\_problem3.py}.
+\path{hw1/src/run_problem1.py}, \path{hw1/src/run_problem2.py}, and
+\path{hw1/src/run_problem3.py}.
 
 \section{Exercise 1 -- Max-flow and cuts (2026/27)}
 
@@ -408,12 +409,11 @@ decreases from \(0\) to \(-0.0805114506\), then increases to
 
 \section{Exercise 3 -- Traffic assignment}
 
-\noindent\textbf{Data provenance.} The traffic input matrices and corresponding
-numerical values below come from the four \texttt{.mat} files currently stored
-in the project repository. The assignment continues to name the same files in
-2026/27, but their latest contents must be compared with the official course
-files before submission. The figures and numbers in this section are retained
-from the prior project until that check is possible.
+\noindent\textbf{Data provenance.} The four traffic input files used in
+Exercise 3 (\path{flow.mat}, \path{capacities.mat}, \path{traffic.mat}, and
+\path{traveltime.mat}) were compared with the 2026/27 course files. All four
+files were confirmed byte-for-byte identical, so the original traffic-network
+results and plots remain valid for the current assignment.
 
 
 The traffic network is a directed graph with \(17\) nodes and \(28\) directed
@@ -787,51 +787,51 @@ the modelling choices orally.
 
 \subsection{Repository-to-report mapping}
 
-All scripts are intended to be run from the \texttt{hw1/} directory. The following table maps each
+All scripts are intended to be run from the \path{hw1/} directory. The following table maps each
 exercise to the corresponding source file, input data, and generated outputs.
 
 \begin{center}
 \scriptsize
 
-\begin{tabular}{p{0.10\textwidth} p{0.20\textwidth} p{0.23\textwidth} p{0.27\textwidth}}
+\begin{tabular}{p{0.10\textwidth} p{0.18\textwidth} p{0.22\textwidth} >{\raggedright\arraybackslash}p{0.36\textwidth}}
 \hline
 Task & Script & Inputs & Main outputs \\
 \hline
 Exercise 1 &
-\texttt{src/run\_problem1.py} &
+\path{src/run_problem1.py} &
 Hard-coded graph with nodes $\{o,a,b,c,d\}$ and capacities $c_1,\ldots,c_6$ &
-\texttt{results/problem1\_cuts.csv},
-\texttt{results/problem1\_b\_results.csv},
-\texttt{results/problem1\_c\_results.csv},
-\texttt{figures/problem1\_b\_throughput.png},
-\texttt{figures/problem1\_c\_added\_link\_throughput.png}
+\path{results/problem1_cuts.csv},
+\path{results/problem1_b_results.csv},
+\path{results/problem1_c_results.csv},
+\path{figures/problem1_b_throughput.png},
+\path{figures/problem1_c_added_link_throughput.png}
 \\
 \hline
 Exercise 2 &
-\texttt{src/run\_problem2.py} &
+\path{src/run_problem2.py} &
 Reconstructed undirected graph from the assignment figure; uniform intrinsic centrality $\mu$ &
-\texttt{results/problem2\_katz.csv},
-\texttt{results/problem2\_pagerank\_beta015.csv},
-\texttt{results/problem2\_pagerank\_beta\_sensitivity.csv},
-\texttt{figures/problem2\_katz.png},
-\texttt{figures/problem2\_pagerank\_beta015.png},
-\texttt{figures/problem2\_pagerank\_difference\_beta.png}
+\path{results/problem2_katz.csv},
+\path{results/problem2_pagerank_beta015.csv},
+\path{results/problem2_pagerank_beta_sensitivity.csv},
+\path{figures/problem2_katz.png},
+\path{figures/problem2_pagerank_beta015.png},
+\path{figures/problem2_pagerank_difference_beta.png}
 \\
 \hline
 Exercise 3 &
-\texttt{src/run\_problem3.py} &
-\texttt{data/flow.mat},
-\texttt{data/capacities.mat},
-\texttt{data/traffic.mat},
-\texttt{data/traveltime.mat} &
-\texttt{results/problem3\_shortest\_path.csv},
-\texttt{results/problem3\_maxflow.csv},
-\texttt{results/problem3\_nu.csv},
-\texttt{results/problem3\_social\_optimum.csv},
-\texttt{results/problem3\_wardrop.csv},
-\texttt{results/problem3\_tolls\_total\_travel\_time.csv},
-\texttt{results/problem3\_additional\_delay.csv},
-\texttt{figures/problem3\_flow\_comparison.png}
+\path{src/run_problem3.py} &
+\path{data/flow.mat},
+\path{data/capacities.mat},
+\path{data/traffic.mat},
+\path{data/traveltime.mat} &
+\path{results/problem3_shortest_path.csv},
+\path{results/problem3_maxflow.csv},
+\path{results/problem3_nu.csv},
+\path{results/problem3_social_optimum.csv},
+\path{results/problem3_wardrop.csv},
+\path{results/problem3_tolls_total_travel_time.csv},
+\path{results/problem3_additional_delay.csv},
+\path{figures/problem3_flow_comparison.png}
 \\
 \hline
 \end{tabular}
@@ -957,61 +957,61 @@ whose congestion externality is smaller than their free-flow-time term.
 \section{Code and File Organization}
 
 \begin{itemize}
-    \item Homework folder: \texttt{hw1/}
-    \item Official guideline PDF: \texttt{hw1/data/hw1\_en\_2026-27.pdf}.
+    \item Homework folder: \path{hw1/}
+    \item Official guideline PDF: \path{hw1/data/hw1_en_2026-27.pdf}.
     \item Input data for the traffic assignment exercise:
     \begin{itemize}
-        \item \texttt{hw1/data/flow.mat}: measured flow vector.
-        \item \texttt{hw1/data/capacities.mat}: edge-capacity vector.
-        \item \texttt{hw1/data/traffic.mat}: node-link incidence matrix.
-        \item \texttt{hw1/data/traveltime.mat}: free-flow travel-time vector.
+        \item \path{hw1/data/flow.mat}: measured flow vector.
+        \item \path{hw1/data/capacities.mat}: edge-capacity vector.
+        \item \path{hw1/data/traffic.mat}: node-link incidence matrix.
+        \item \path{hw1/data/traveltime.mat}: free-flow travel-time vector.
     \end{itemize}
     \item Main scripts:
     \begin{itemize}
-        \item \texttt{hw1/src/run\_problem1.py}: Exercise 1, cut enumeration, max-flow/min-cut check, integer capacity augmentation, added-link search, and throughput plots.
-        \item \texttt{hw1/src/run\_problem2.py}: Exercise 2, graph reconstruction, Katz centrality, distributed PageRank, and beta sensitivity.
-        \item \texttt{hw1/src/run\_problem3.py}: Exercise 3, shortest path, maximum flow, exogenous inflow vector, social optimum, Wardrop equilibrium, tolls, additional-delay objective, and flow-comparison plot.
+        \item \path{hw1/src/run_problem1.py}: Exercise 1, cut enumeration, max-flow/min-cut check, integer capacity augmentation, added-link search, and throughput plots.
+        \item \path{hw1/src/run_problem2.py}: Exercise 2, graph reconstruction, Katz centrality, distributed PageRank, and beta sensitivity.
+        \item \path{hw1/src/run_problem3.py}: Exercise 3, shortest path, maximum flow, exogenous inflow vector, social optimum, Wardrop equilibrium, tolls, additional-delay objective, and flow-comparison plot.
     \end{itemize}
     \item Result files:
     \begin{itemize}
-        \item Exercise 1: \texttt{hw1/results/problem1\_cuts.csv}, \\ \texttt{problem1\_b\_results.csv}, \texttt{problem1\_c\_results.csv}.
-        \item Exercise 2: \texttt{hw1/results/problem2\_katz.csv}, \\ \texttt{problem2\_pagerank\_beta015.csv}, \texttt{problem2\_pagerank\_beta\_sensitivity.csv}.
-        \item Exercise 3: \texttt{hw1/results/problem3\_shortest\_path.csv}, \texttt{problem3\_maxflow.csv}, \texttt{problem3\_nu.csv}, \texttt{problem3\_social\_optimum.csv}, \texttt{problem3\_wardrop.csv}, \\ \texttt{problem3\_tolls\_total\_travel\_time.csv}, \texttt{problem3\_additional\_delay.csv}.
+        \item Exercise 1: \path{hw1/results/problem1_cuts.csv}, \\ \path{problem1_b_results.csv}, \path{problem1_c_results.csv}.
+        \item Exercise 2: \path{hw1/results/problem2_katz.csv}, \\ \path{problem2_pagerank_beta015.csv}, \path{problem2_pagerank_beta_sensitivity.csv}.
+        \item Exercise 3: \path{hw1/results/problem3_shortest_path.csv}, \path{problem3_maxflow.csv}, \path{problem3_nu.csv}, \path{problem3_social_optimum.csv}, \path{problem3_wardrop.csv}, \\ \path{problem3_tolls_total_travel_time.csv}, \path{problem3_additional_delay.csv}.
     \end{itemize}
     \item Figure files:
     \begin{itemize}
-        \item \texttt{hw1/figures/problem1\_b\_throughput.png}.
-        \item \texttt{hw1/figures/problem1\_c\_added\_link\_throughput.png}.
-        \item \texttt{hw1/figures/problem2\_katz.png}.
-        \item \texttt{hw1/figures/problem2\_pagerank\_beta015.png}.
-        \item \texttt{hw1/figures/problem2\_pagerank\_difference\_beta.png}.
-        \item \texttt{hw1/figures/problem3\_flow\_comparison.png}.
+        \item \path{hw1/figures/problem1_b_throughput.png}.
+        \item \path{hw1/figures/problem1_c_added_link_throughput.png}.
+        \item \path{hw1/figures/problem2_katz.png}.
+        \item \path{hw1/figures/problem2_pagerank_beta015.png}.
+        \item \path{hw1/figures/problem2_pagerank_difference_beta.png}.
+        \item \path{hw1/figures/problem3_flow_comparison.png}.
     \end{itemize}
 \end{itemize}
 
 \section{Reproducibility Notes}
 
 \begin{itemize}
-    \item Required Python packages, inferred from imports and \texttt{requirements.txt}: \texttt{cvxpy}, \texttt{matplotlib}, \texttt{networkx}, \texttt{numpy}, \texttt{pandas}, \texttt{scipy}.
-    \item The scripts are intended to be run from the \texttt{hw1/} directory, as indicated by script docstrings and \texttt{README.md}:
+    \item Required Python packages, inferred from imports and \path{requirements.txt}: \texttt{cvxpy}, \texttt{matplotlib}, \texttt{networkx}, \texttt{numpy}, \texttt{pandas}, \texttt{scipy}.
+    \item The scripts are intended to be run from the \path{hw1/} directory, as indicated by script docstrings and \texttt{README.md}:
     \begin{itemize}
-        \item \texttt{python src/run\_problem1.py}
-        \item \texttt{python src/run\_problem2.py}
-        \item \texttt{python src/run\_problem3.py}
+        \item \path{python src/run_problem1.py}
+        \item \path{python src/run_problem2.py}
+        \item \path{python src/run_problem3.py}
     \end{itemize}
     \item Expected inputs:
     \begin{itemize}
-        \item \texttt{run\_problem1.py} and \texttt{run\_problem2.py} define their small graphs directly in code.
-        \item \texttt{run\_problem3.py} expects \texttt{flow.mat}, \texttt{capacities.mat}, \texttt{traffic.mat}, and \texttt{traveltime.mat} in \texttt{hw1/data/}.
+        \item \path{run_problem1.py} and \path{run_problem2.py} define their small graphs directly in code.
+        \item \path{run_problem3.py} expects \path{flow.mat}, \path{capacities.mat}, \path{traffic.mat}, and \path{traveltime.mat} in \path{hw1/data/}.
     \end{itemize}
     \item Expected outputs:
     \begin{itemize}
-        \item CSV tables are written under \texttt{hw1/results/}.
-        \item PNG figures are written under \texttt{hw1/figures/}.
+        \item CSV tables are written under \path{hw1/results/}.
+        \item PNG figures are written under \path{hw1/figures/}.
     \end{itemize}
     \item Random seeds:
     \begin{itemize}
-        \item No random sampling is used in the HW1 scripts. The computations are deterministic, apart from possible minor convex-solver numerical differences in \texttt{run\_problem3.py}.
+        \item No random sampling is used in the HW1 scripts. The computations are deterministic, apart from possible minor convex-solver numerical differences in \path{run_problem3.py}.
     \end{itemize}
     \item Important implementation assumptions:
     \begin{itemize}
@@ -1049,7 +1049,10 @@ whose congestion externality is smaller than their free-flow-time term.
         \item The original imbalance vector is $\nu=B f_{\text{given}}$. The optimization problems use a reduced $\nu^{\mathrm{new}}$ with inflow only at node 1 and outflow only at node 17.
         \item The delay is $\tau_e(f_e)=l_e/(1-f_e/C_e)$.
         \item The social optimum minimizes $\sum_e f_e\tau_e(f_e)$, implemented in CVXPY as $\sum_e l_e C_e/(1-f_e/C_e)-l_e C_e$.
-        \item Wardrop equilibrium is obtained by minimizing the Beckmann potential $\sum_e -l_e C_e\log(1-f_e/C_e)$.
+        \item Wardrop equilibrium is obtained by minimizing the Beckmann potential
+        \[
+            \sum_e -l_e C_e\log(1-f_e/C_e).
+        \]
         \item Marginal-cost tolls use $\omega_e=f^\star_e\tau'_e(f^\star_e)$, where $\tau'_e(f_e)=(l_e/C_e)/(1-f_e/C_e)^2$.
         \item The additional-delay objective minimizes $\sum_e f_e(\tau_e(f_e)-l_e)$. Its toll vector is $\omega^{\mathrm{add}}_e=-l_e+f^{\star,\mathrm{add}}_e\tau'_e(f^{\star,\mathrm{add}}_e)$.
     \end{itemize}
@@ -1058,34 +1061,34 @@ whose congestion externality is smaller than their free-flow-time term.
 \section{Figures and Results Traceability}
 
 \paragraph{Exercise 1(a), all cuts and minimum cut table.}
-Generated by \texttt{hw1/src/run\_problem1.py}; stored in \texttt{hw1/results/problem1\_cuts.csv}. The code enumerates the 8 cuts induced by subsets of $\{a,b,c\}$; the report table matches this structure.
+Generated by \path{hw1/src/run_problem1.py}; stored in \path{hw1/results/problem1_cuts.csv}. The code enumerates the 8 cuts induced by subsets of $\{a,b,c\}$; the report table matches this structure.
 
 \paragraph{Exercise 1(b), existing-link capacity augmentation throughput curve.}
-Generated by \texttt{hw1/src/run\_problem1.py}; stored in \texttt{hw1/results/problem1\_b\_results.csv} and\\ \texttt{hw1/figures/problem1\_b\_throughput.png}. The CSV contains the budget $x$, best throughput, and one optimal allocation.
+Generated by \path{hw1/src/run_problem1.py}; stored in \path{hw1/results/problem1_b_results.csv} and\\ \path{hw1/figures/problem1_b_throughput.png}. The CSV contains the budget $x$, best throughput, and one optimal allocation.
 
 \paragraph{Exercise 1(c), added-link throughput curve and comparison with existing-link augmentation.}
-Generated by \texttt{hw1/src/run\_problem1.py}; stored in \\ \texttt{hw1/results/problem1\_c\_results.csv} and \texttt{hw1/figures/problem1\_c\_added\_link\_throughput.png}. The direct $o\to d$ candidate is forbidden; the chosen optimal link is $e_7:o\to c$.
+Generated by \path{hw1/src/run_problem1.py}; stored in \\ \path{hw1/results/problem1_c_results.csv} and \path{hw1/figures/problem1_c_added_link_throughput.png}. The direct $o\to d$ candidate is forbidden; the chosen optimal link is $e_7:o\to c$.
 
 \paragraph{Exercise 2 Katz centrality table and plot.}
-Generated by \texttt{hw1/src/run\_problem2.py}; stored in \texttt{hw1/results/problem2\_katz.csv} and \texttt{hw1/figures/problem2\_katz.png}. The graph edge set is hard-coded from the assignment figure.
+Generated by \path{hw1/src/run_problem2.py}; stored in \path{hw1/results/problem2_katz.csv} and \path{hw1/figures/problem2_katz.png}. The graph edge set is hard-coded from the assignment figure.
 
 \paragraph{Exercise 2 PageRank table for $\beta=0.15$ and plot.}
-Generated by \texttt{hw1/src/run\_problem2.py}; stored in \texttt{hw1/results/problem2\_pagerank\_beta015.csv} and \\ \texttt{hw1/figures/problem2\_pagerank\_beta015.png}. Iteration count and final tolerance are printed by the script and centrality values are stored in the CSV.
+Generated by \path{hw1/src/run_problem2.py}; stored in \path{hw1/results/problem2_pagerank_beta015.csv} and \\ \path{hw1/figures/problem2_pagerank_beta015.png}. Iteration count and final tolerance are printed by the script and centrality values are stored in the CSV.
 
 \paragraph{Exercise 2 beta-sensitivity table and $PR(n_6)-PR(n_9)$ plot.} 
- Generated by \\ \texttt{hw1 / src/run\_problem2.py}; stored in \\ \texttt{hw1 / results/problem2 \_pagerank \_beta \_sensitivity.csv} and \\ \texttt{hw1/figures/problem2\_pagerank\_difference\_beta.png}. The monotonicity conclusion is supported by the stored difference column
+ Generated by \\ \path{hw1 / src/run_problem2.py}; stored in \\ \path{hw1 / results/problem2 _pagerank _beta _sensitivity.csv} and \\ \path{hw1/figures/problem2_pagerank_difference_beta.png}. The monotonicity conclusion is supported by the stored difference column
 
 \paragraph{Exercise 3 shortest path, maximum flow, and exogenous inflow vector.}
-Generated by \texttt{hw1/src/run\_problem3.py}; stored in \texttt{hw1/results/problem3\_shortest\_path.csv}, \texttt{problem3\_maxflow.csv}, and \texttt{problem3\_nu.csv}. These files support the report's path, max-flow, and $\nu/\nu^{\mathrm{new}}$ values.
+Generated by \path{hw1/src/run_problem3.py}; stored in \path{hw1/results/problem3_shortest_path.csv}, \path{problem3_maxflow.csv}, and \path{problem3_nu.csv}. These files support the report's path, max-flow, and $\nu/\nu^{\mathrm{new}}$ values.
 
 \paragraph{Exercise 3 social optimum, Wardrop equilibrium, price of anarchy, and toll verification.}
-Generated by \texttt{hw1/src/run\_problem3.py}; stored in \\ \texttt{hw1/results/problem3\_social\_optimum.csv}, \texttt{problem3\_wardrop.csv}, \\ \texttt{problem3\_tolls\_total\_travel\_time.csv}, and \texttt{problem3\_additional\_delay.csv}. Solver status, objective values, tolls, flow differences, and norm differences are stored in the CSVs.
+Generated by \path{hw1/src/run_problem3.py}; stored in \\ \path{hw1/results/problem3_social_optimum.csv}, \path{problem3_wardrop.csv}, \\ \path{problem3_tolls_total_travel_time.csv}, and \path{problem3_additional_delay.csv}. Solver status, objective values, tolls, flow differences, and norm differences are stored in the CSVs.
 
 \paragraph{Exercise 3 flow-comparison figure and detailed edge-flow comparison.}
-Generated by \texttt{hw1/src/run\_problem3.py}; stored in \texttt{hw1/figures/problem3\_flow\_comparison.png} plus the traffic CSV files listed above. The report's detailed edge-flow table is derived from the social, Wardrop, toll, and additional-delay output CSVs.
+Generated by \path{hw1/src/run_problem3.py}; stored in \path{hw1/figures/problem3_flow_comparison.png} plus the traffic CSV files listed above. The report's detailed edge-flow table is derived from the social, Wardrop, toll, and additional-delay output CSVs.
 
 \paragraph{Traceability uncertainty.}
-No major missing traceability was found after aligning the script references with the files currently on disk: \texttt{hw1/src/run\_problem1.py}, \texttt{hw1/src/run\_problem2.py}, and \texttt{hw1/src/run\_problem3.py}.
+No major missing traceability was found after aligning the script references with the files currently on disk: \path{hw1/src/run_problem1.py}, \path{hw1/src/run_problem2.py}, and \path{hw1/src/run_problem3.py}.
 
 \section{Additional Validation and Consistency Checks}
 
