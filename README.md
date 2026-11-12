@@ -77,6 +77,10 @@ The consistent optimal added link is \`e7: o -> c\`. For integer extra budgets,
 the verified throughput formulas are \`4 + floor(x/2)\` without and
 \`5 + floor(x/2)\` with a new link. The 2025/26 baseline remains in \`main\`.
 The source script regenerates three CSVs and two PNG figures.
+The 2026/27 report source is `hw1/hw1_2026_27.tex`; its two Exercise 1
+plots are generated from version-controlled PGFPlots files in `hw1/figures/`.
+Compile from `hw1/` with `pdflatex hw1_2026_27.tex` (twice for references).
+The old 2025/26 Exercise 1 PNG plots are intentionally not carried on this branch.
 Run \`python -m unittest discover hw1/tests\` from the repository root to
 check network capacities, admissible arcs, and constructive allocations.
 
