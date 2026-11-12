@@ -1,0 +1,42 @@
+name: HW1 2026/27 verification
+
+on:
+  push:
+    branches: [hw1-2026-27]
+  pull_request:
+    paths:
+      - 'hw1/**'
+      - 'requirements.txt'
+      - '.github/workflows/hw1-2026-27.yml'
+
+jobs:
+  verify-hw1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Unit regression tests
+        run: python -m unittest discover hw1/tests -v
+      - name: Run HW1 exercises
+        working-directory: hw1
+        run: |
+          python src/run_problem1.py
+          python src/run_problem2.py
+          python src/run_problem3.py
+      - name: Check Exercise 1 results match expected formulas
+        working-directory: hw1
+        run: |
+          python - <<'PY'
+          import pandas as pd
+          b = pd.read_csv('results/problem1_b_results.csv')
+          c = pd.read_csv('results/problem1_c_results.csv')
+          assert all(int(r.best_throughput)==4+int(r.x)//2 for r in b.itertuples())
+          assert all(int(r.best_throughput)==5+int(r.x)//2 for r in c.itertuples())
+          assert all(r.added_link=='o->c' for r in c.itertuples())
+          print('Exercise 1: verified')
+          PY
