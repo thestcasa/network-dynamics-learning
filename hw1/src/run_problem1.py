@@ -321,10 +321,10 @@ def main() -> None:
         ].to_string(index=False)
     )
     plot_throughput(
-        c_results,
+        c_results[c_results["x"] > 0],
         Path("figures/problem1_c_added_link_throughput.png"),
         "Exercise 1(c): best throughput with one added link",
-        comparison=b_results,
+        comparison=b_results[b_results["x"] > 0],
     )
 
     comparison = c_results[["x", "best_throughput"]].merge(
