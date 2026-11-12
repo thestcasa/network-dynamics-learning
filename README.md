@@ -71,23 +71,25 @@ Run each homework from its own folder. This avoids path issues because scripts m
 
 ### Homework 1
 
-**2026/27 adaptation (branch \`hw1-2026-27\`):** The network-flow exercise uses
-capacities \`[2, 2, 2, 2, 3, 1]\` and forbids a direct added \`o -> d\` link.
-The consistent optimal added link is \`e7: o -> c\`. For integer extra budgets,
-the verified throughput formulas are \`4 + floor(x/2)\` without and
-\`5 + floor(x/2)\` with a new link. The 2025/26 baseline remains in \`main\`.
+**2026/27 adaptation (branch `hw1-2026-27`):** The network-flow exercise uses
+capacities `[2, 2, 2, 2, 3, 1]` and forbids a direct added `o -> d` link.
+The consistent optimal added link is `e7: o -> c`. For integer extra budgets,
+the verified throughput formulas are `4 + floor(x/2)` without and
+`5 + floor(x/2)` with a new link. The 2025/26 baseline remains in `main`.
 The source script regenerates three CSVs and two PNG figures.
 The 2026/27 report source is `hw1/hw1_2026_27.tex`; its two Exercise 1
 plots are generated from version-controlled PGFPlots files in `hw1/figures/`.
 Compile from `hw1/` with `pdflatex hw1_2026_27.tex` (twice for references).
 The old 2025/26 Exercise 1 PNG plots are intentionally not carried on this branch.
-Run \`python -m unittest discover hw1/tests\` from the repository root to
+Run `python -m unittest discover hw1/tests` from the repository root to
 check network capacities, admissible arcs, and constructive allocations.
 
-**Before submitting:** compare the 2026/27 official \`.mat\` data files against
-\`hw1/data\`. The newer PDF specifies the same filenames, but file equality
-has not been independently established. The report should only reuse Exercise 3
-numbers after this check.
+**Traffic data verification:** the four 2026/27 course files (`flow.mat`,
+`capacities.mat`, `traffic.mat`, and `traveltime.mat`) were compared
+byte-for-byte against their 2025/26 counterparts and are identical. Exercise 3
+therefore retains the previous numerical results. Before submission, verify
+that the report's author list and contribution statement reflect the actual
+collaboration.
 
 
 Main scripts:
